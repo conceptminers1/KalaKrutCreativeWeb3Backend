@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, MapPin, DollarSign, Sparkles, CheckCircle, Loader2, Users, Briefcase, Ticket, Send, FileText, AlertCircle, XCircle, Plus, Trash2, ListChecks, Lock, Unlock, ShieldAlert, Coins, RefreshCw, FileCode } from 'lucide-react';
+import { Calendar, MapPin, DollarSign, Sparkles, CheckCircle, Loader2, Users, Briefcase, Ticket, Send, FileText, AlertCircle, XCircle, Plus, Trash2, ListChecks, Lock, Unlock, ShieldAlert, Coins, RefreshCw, FileCode, Zap } from 'lucide-react';
 import { generateEventDescription } from '../services/geminiService';
 import PaymentGateway from '../components/PaymentGateway';
 import { MOCK_ROSTER, MOCK_SERVICES } from '../mockData';
@@ -21,27 +21,43 @@ const BookingHub: React.FC<BookingHubProps> = ({ onBlockUser, onOpenExchange }) 
   const [showPayment, setShowPayment] = useState(false);
   const [proposalToFund, setProposalToFund] = useState<CollabProposal | null>(null);
   
-  // Contract Editor State
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [viewingContract, setViewingContract] = useState<SmartContractDraft | null>(null);
   const [currentProposalId, setCurrentProposalId] = useState<string>('');
 
-  // Form State
   const [eventName, setEventName] = useState('');
   const [selectedArtist, setSelectedArtist] = useState('');
   const [genre, setGenre] = useState('');
   const [rate, setRate] = useState('');
   const [currency, setCurrency] = useState<'USD' | 'ETH' | 'KALA'>('USD');
   
-  // Milestone State
   const [paymentType, setPaymentType] = useState<'Lump Sum' | 'Milestone Based'>('Lump Sum');
   const [milestones, setMilestones] = useState<Milestone[]>([
     { id: 'm1', title: 'Initial Deposit', percentage: 50, status: 'Pending' },
     { id: 'm2', title: 'Project Completion', percentage: 50, status: 'Pending' }
   ]);
 
-  // Mock Proposals State
   const [myProposals, setMyProposals] = useState<CollabProposal[]>([
+     {
+       id: 'p-urgent-1',
+       eventName: 'Last Minute Warehouse Party',
+       artistName: 'DJ Havoc',
+       status: 'Pending',
+       budget: '1500',
+       currency: 'USD',
+       sentDate: new Date().toLocaleDateString(),
+       paymentType: 'Lump Sum',
+       isUrgent: true,
+       receiverNote: 'Need a high-energy DJ for tonight!',
+       contractData: {
+          id: 'c-urgent-1',
+          contractType: 'Performance Agreement',
+          content: '// URGENT DRAFT...',
+          lastEditedBy: 'User',
+          version: 1,
+          status: 'Pending Review'
+       }
+     },
      {
        id: 'p1',
        eventName: 'Neon Nights Vol. 1',
@@ -86,7 +102,6 @@ const BookingHub: React.FC<BookingHubProps> = ({ onBlockUser, onOpenExchange }) 
      }
   ]);
 
-  // Filtering Roster for Dropdowns
   const artists = MOCK_ROSTER.filter(r => r.role === UserRole.ARTIST);
 
   const handleAIGenerate = async () => {
@@ -105,9 +120,7 @@ const BookingHub: React.FC<BookingHubProps> = ({ onBlockUser, onOpenExchange }) 
   const totalPercentage = milestones.reduce((sum, m) => sum + Number(m.percentage), 0);
 
   const handleSendProposal = () => {
-    // 1. Content Moderation Check - All fields
-    const milestoneText = milestones.map(m => m.title).join(' ');
-    const contentToCheck = `${eventName} ${genre} ${description} ${milestoneText}`;
+    const contentToCheck = `${eventName} ${genre} ${description} ${milestones.map(m => m.title).join(' ')}`;
 
     if (checkContentForViolation(contentToCheck)) {
       onBlockUser();
@@ -126,7 +139,6 @@ const BookingHub: React.FC<BookingHubProps> = ({ onBlockUser, onOpenExchange }) 
 
     const artistName = artists.find(a => a.id === selectedArtist)?.name || 'Unknown Artist';
 
-    // Initial Draft Contract
     const initialContract: SmartContractDraft = {
        id: `c-p${Date.now()}`,
        contractType: 'Service Agreement',
@@ -153,7 +165,6 @@ const BookingHub: React.FC<BookingHubProps> = ({ onBlockUser, onOpenExchange }) 
     notify("Proposal Sent! The artist will be notified and you can track progress in your dashboard.", "success");
     setActiveTab('manage');
 
-    // Reset form
     setEventName('');
     setRate('');
     setGenre('');
@@ -201,6 +212,8 @@ const BookingHub: React.FC<BookingHubProps> = ({ onBlockUser, onOpenExchange }) 
      }));
      notify(`Contract status changed to ${status}`, "info");
   };
+  
+  const sortedProposals = [...myProposals].sort((a, b) => Number(b.isUrgent) - Number(a.isUrgent));
 
   return (
     <div className="space-y-6">
@@ -212,12 +225,11 @@ const BookingHub: React.FC<BookingHubProps> = ({ onBlockUser, onOpenExchange }) 
           <p className="text-kala-400 text-sm">Create, negotiate, and fund proposals for any user on the portal.</p>
         </div>
         
-        {/* Tab Switcher */}
         <div className="flex bg-kala-800 p-1 rounded-lg border border-kala-700">
           <button 
             onClick={() => setActiveTab('create')}
             className={`px-4 py-2 rounded-md text-sm font-bold transition-all flex items-center gap-2 ${
-              activeTab === 'create'
+              activeT_ab === 'create'
               ? 'bg-kala-secondary text-kala-900 shadow-lg'
               : 'text-kala-400 hover:text-white'
             }`}
@@ -233,24 +245,21 @@ const BookingHub: React.FC<BookingHubProps> = ({ onBlockUser, onOpenExchange }) 
             }`}
           >
             <FileText className="w-4 h-4" /> Manage & Fund
-            {myProposals.some(p => p.status === 'Accepted' || p.status === 'Negotiation') && <span className="w-2 h-2 rounded-full bg-yellow-500"></span>}
+            {myProposals.some(p => p.status === 'Accepted' || p.status === 'Negotiation' || p.isUrgent) && <span className={`w-2 h-2 rounded-full ${myProposals.some(p => p.isUrgent) ? 'bg-red-500 animate-pulse' : 'bg-yellow-500'}`}></span>}
           </button>
         </div>
        </div>
 
       {activeTab === 'create' ? (
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 animate-in fade-in">
-          {/* Collab Proposal Form */}
           <div className="xl:col-span-2 bg-kala-800/50 backdrop-blur-md border border-kala-700 rounded-xl p-8">
             <div className="space-y-8">
               
-              {/* Policy Warning */}
               <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-3 flex items-start gap-3">
                  <ShieldAlert className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
                  <p className="text-xs text-red-200">{MODERATION_WARNING_TEXT}</p>
               </div>
 
-              {/* Section 1: Core Talent */}
               <div>
                  <h3 className="text-sm font-bold text-kala-500 uppercase tracking-wider mb-4 border-b border-kala-700 pb-2">
                     1. Proposal Details
@@ -293,7 +302,6 @@ const BookingHub: React.FC<BookingHubProps> = ({ onBlockUser, onOpenExchange }) 
                  </div>
               </div>
 
-              {/* Section 4: Details & AI */}
               <div>
                  <h3 className="text-sm font-bold text-kala-500 uppercase tracking-wider mb-4 border-b border-kala-700 pb-2">
                     4. Contract & Payment
@@ -359,7 +367,6 @@ const BookingHub: React.FC<BookingHubProps> = ({ onBlockUser, onOpenExchange }) 
                     </div>
                  </div>
 
-                 {/* Swap Helper Link */}
                  <div className="flex justify-end">
                     <button
                       onClick={() => onOpenExchange && onOpenExchange()}
@@ -385,7 +392,6 @@ const BookingHub: React.FC<BookingHubProps> = ({ onBlockUser, onOpenExchange }) 
             </div>
           </div>
 
-          {/* Sidebar: Info */}
           <div className="space-y-6">
             <div className="bg-gradient-to-br from-indigo-900/50 to-kala-900 border border-indigo-700/30 rounded-xl p-6">
                 <h3 className="text-lg font-semibold text-white mb-2">Smart Contract Flow</h3>
@@ -411,13 +417,18 @@ const BookingHub: React.FC<BookingHubProps> = ({ onBlockUser, onOpenExchange }) 
           </div>
         </div>
       ) : (
-        /* Manage Proposals Tab */
         <div className="space-y-6 animate-in slide-in-from-right-4 fade-in">
-           {myProposals.map((prop) => (
-             <div key={prop.id} className="bg-kala-800/50 border border-kala-700 rounded-xl p-6 hover:border-kala-500 transition-colors">
+           {sortedProposals.map((prop) => (
+             <div key={prop.id} className={`bg-kala-800/50 border rounded-xl p-6 transition-colors ${prop.isUrgent ? 'border-red-500/50 hover:border-red-400 shadow-lg shadow-red-900/10' : 'border-kala-700 hover:border-kala-500'}`}>
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                    <div>
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        {prop.isUrgent && (
+                            <span className="px-2 py-0.5 rounded text-xs font-bold border uppercase tracking-wider bg-red-500/10 text-red-400 border-red-500/20 flex items-center gap-1 animate-pulse">
+                               <Zap className="w-3 h-3" />
+                               Urgent Request
+                            </span>
+                        )}
                          <span className={`px-2 py-0.5 rounded text-xs font-bold border uppercase tracking-wider ${
                             prop.status === 'Accepted' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
                             prop.status === 'Rejected' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
@@ -438,7 +449,6 @@ const BookingHub: React.FC<BookingHubProps> = ({ onBlockUser, onOpenExchange }) 
                    </div>
                 </div>
 
-                {/* Contract Status Banner */}
                 {prop.status === 'Negotiation' && (
                    <div className="bg-orange-500/10 border border-orange-500/30 p-3 rounded-lg flex justify-between items-center mb-4">
                       <div className="flex items-center gap-2">
@@ -505,7 +515,7 @@ const BookingHub: React.FC<BookingHubProps> = ({ onBlockUser, onOpenExchange }) 
       {isEditorOpen && viewingContract && (
          <ContractEditor
             contract={viewingContract}
-            userRole={UserRole.ARTIST} // Assume standard user for this view
+            userRole={UserRole.ARTIST} 
             onClose={() => setIsEditorOpen(false)}
             onSave={handleUpdateContract}
             onStatusChange={handleContractStatusChange}

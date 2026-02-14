@@ -6,6 +6,7 @@ import {
   Lock, Unlock, ShieldCheck, MapPin, Star, Briefcase, Music, Calendar, Headphones, Ticket, Layers, Search, ShieldAlert
 } from 'lucide-react';
 import { useToast } from '../contexts/ToastContext';
+import UrgentBookingForm from './UrgentBookingForm'; // Import the new form
 
 interface RosterProps {
   onNavigate: (view: string) => void;
@@ -17,14 +18,42 @@ const Roster: React.FC<RosterProps> = ({ onNavigate, onViewProfile }) => {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [showPayment, setShowPayment] = useState(false);
-  
-  // Load data from Knowledge Graph
+  const [showUrgentBookingForm, setShowUrgentBookingForm] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<any>(null);
+
   const rosterMembers = knowledgeGraph.getRosterMembers();
 
   const filteredRoster = rosterMembers.filter(m => 
     m.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     m.role.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleBookNow = (member: any) => {
+    if (!isSubscribed) {
+      setShowPayment(true);
+    } else {
+      setSelectedMember(member);
+      setShowUrgentBookingForm(true);
+    }
+  };
+
+  const handleUrgentBookingSubmit = (details: any) => {
+    console.log("Urgent Booking Submitted:", details);
+    // Here you would typically send the data to your backend
+    knowledgeGraph.addProposal({
+      ...details,
+      id: String(Date.now()),
+      proposerId: 'user-id', // Replace with actual user ID
+      artistId: selectedMember.id,
+      status: 'pending',
+      isUrgent: true,
+      milestones: [],
+      totalBudget: details.totalRate,
+      createdAt: new Date().toISOString(),
+    });
+    setShowUrgentBookingForm(false);
+    notify(`Urgent booking request sent to ${selectedMember.name}!`, "success");
+  };
 
   return (
     <div className="space-y-6">
@@ -76,6 +105,7 @@ const Roster: React.FC<RosterProps> = ({ onNavigate, onViewProfile }) => {
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {filteredRoster.map((member) => {
           const isProtected = member.protected;
+          const rating = typeof member.rating === 'number' ? member.rating : 0;
 
           return (
             <div key={member.id} className={`relative bg-kala-800/50 border rounded-xl overflow-hidden group transition-all ${isProtected ? 'border-red-900/50' : 'border-kala-700 hover:border-kala-500'}`}>
@@ -113,7 +143,7 @@ const Roster: React.FC<RosterProps> = ({ onNavigate, onViewProfile }) => {
                        {isSubscribed && !isProtected ? (
                          <div className="flex flex-col items-end">
                            <div className="flex items-center gap-1 text-yellow-400 font-bold text-lg">
-                             {member.rating.toFixed(1)} <Star className="w-4 h-4 fill-current" />
+                             {rating.toFixed(1)} <Star className="w-4 h-4 fill-current" />
                            </div>
                            <div className="text-xs text-kala-500">Community Rating</div>
                          </div>
@@ -180,14 +210,15 @@ const Roster: React.FC<RosterProps> = ({ onNavigate, onViewProfile }) => {
                         View Profile
                       </button>
                       <button 
-                        disabled={!isSubscribed || isProtected}
+                        onClick={() => handleBookNow(member)}
+                        disabled={isProtected && !isSubscribed}
                         className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-2 ${
                           isSubscribed && !isProtected
                           ? 'bg-kala-secondary text-kala-900 hover:bg-cyan-400' 
-                          : 'bg-kala-800 text-kala-500 cursor-not-allowed'
+                          : isProtected ? 'bg-kala-800 text-kala-500 cursor-not-allowed' : 'bg-kala-secondary text-kala-900 hover:bg-cyan-400'
                         }`}
                       >
-                        {isProtected ? 'Locked' : isSubscribed ? 'Book Now' : 'Subscribe'}
+                        {isProtected ? 'Locked' : 'Book Now'}
                       </button>
                     </div>
                   </div>
@@ -209,6 +240,14 @@ const Roster: React.FC<RosterProps> = ({ onNavigate, onViewProfile }) => {
            }}
            onCancel={() => setShowPayment(false)}
          />
+      )}
+
+      {showUrgentBookingForm && selectedMember && (
+        <UrgentBookingForm 
+          artistName={selectedMember.name} 
+          onClose={() => setShowUrgentBookingForm(false)} 
+          onSubmit={handleUrgentBookingSubmit} 
+        />
       )}
     </div>
   );

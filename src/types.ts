@@ -194,6 +194,7 @@ export interface CollabProposal {
   sentDate: string;
   paymentType: 'Lump Sum' | 'Milestone Based';
   milestones?: Milestone[];
+  isUrgent?: boolean;
   // Linked Contract
   contractData?: SmartContractDraft;
 }
