@@ -15,7 +15,7 @@ interface BookingHubProps {
 
 const BookingHub: React.FC<BookingHubProps> = ({ onBlockUser, onOpenExchange }) => {
   const { notify } = useToast();
-  const [activeTab, setActiveTab] = useState<'create' | 'manage'>('create');
+  const [activeTab, setActiveTab] = useState<'create' | 'manage'>('manage');
   const [isGenerating, setIsGenerating] = useState(false);
   const [description, setDescription] = useState('');
   const [showPayment, setShowPayment] = useState(false);
@@ -227,16 +227,6 @@ const BookingHub: React.FC<BookingHubProps> = ({ onBlockUser, onOpenExchange }) 
         
         <div className="flex bg-kala-800 p-1 rounded-lg border border-kala-700">
           <button 
-            onClick={() => setActiveTab('create')}
-            className={`px-4 py-2 rounded-md text-sm font-bold transition-all flex items-center gap-2 ${
-              activeT_ab === 'create'
-              ? 'bg-kala-secondary text-kala-900 shadow-lg'
-              : 'text-kala-400 hover:text-white'
-            }`}
-          >
-            <Send className="w-4 h-4" /> New Proposal
-          </button>
-          <button 
             onClick={() => setActiveTab('manage')}
             className={`px-4 py-2 rounded-md text-sm font-bold transition-all flex items-center gap-2 ${
               activeTab === 'manage'
@@ -246,6 +236,16 @@ const BookingHub: React.FC<BookingHubProps> = ({ onBlockUser, onOpenExchange }) 
           >
             <FileText className="w-4 h-4" /> Manage & Fund
             {myProposals.some(p => p.status === 'Accepted' || p.status === 'Negotiation' || p.isUrgent) && <span className={`w-2 h-2 rounded-full ${myProposals.some(p => p.isUrgent) ? 'bg-red-500 animate-pulse' : 'bg-yellow-500'}`}></span>}
+          </button>
+          <button 
+            onClick={() => setActiveTab('create')}
+            className={`px-4 py-2 rounded-md text-sm font-bold transition-all flex items-center gap-2 ${
+              activeTab === 'create'
+              ? 'bg-kala-secondary text-kala-900 shadow-lg'
+              : 'text-kala-400 hover:text-white'
+            }`}
+          >
+            <Send className="w-4 h-4" /> New Proposal
           </button>
         </div>
        </div>

@@ -101,7 +101,7 @@ const Home: React.FC<HomeProps> = ({ onLogin, onViewNews, onJoin }) => {
          toast("Please enter email and password for Live access.", "warning");
          return;
       }
-...
+
 
 
       // Using startTransition to prevent suspension errors during view swaps
