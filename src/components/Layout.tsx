@@ -2,10 +2,9 @@
 import React, { useState, startTransition } from 'react';
 import { 
   LayoutGrid, Users, Calendar, Vote, Settings, LogOut, Menu, X, ShoppingBag, Briefcase, 
-  BarChart3, Contact2, Bot, MessageSquare, UploadCloud, Network, GitMerge, LifeBuoy, CreditCard, Coins, FileText, FileSignature, AlertTriangle, ToggleLeft, ToggleRight, ShieldCheck
+  BarChart3, Contact2, Bot, MessageSquare, UploadCloud, Network, GitMerge, LifeBuoy, CreditCard, Coins, FileText, FileSignature, AlertTriangle, ShieldCheck, Trash2
 } from 'lucide-react';
 import { UserRole } from '../types';
-import { useWallet } from '../contexts/WalletContext';
 import { useData } from '../hooks/useData';
 import SupportWidget from '../components/SupportWidget';
 import { useToast } from '../contexts/ToastContext';
@@ -26,26 +25,34 @@ const Layout: React.FC<LayoutProps> = ({
   onLogout
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isAdminSettingsOpen, setIsAdminSettingsOpen] = useState(false);
-  const { isDemoMode, demoModeAvailable, setDemoModeAvailable } = useData();
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const { isDemoMode, demoModeAvailable, setDemoModeAvailable, purgeMockData } = useData();
   const { notify } = useToast();
 
-  const handleSettings = () => {
-    if (userRole === UserRole.SYSTEM_ADMIN_LIVE) {
-        setIsAdminSettingsOpen(true);
-    } else {
-        notify("Global Settings are restricted to the System Admin (Live) only.", "warning");
-    }
-  };
+  const isLiveAdmin = userRole === UserRole.SYSTEM_ADMIN_LIVE;
+  const isActionDisabled = !isLiveAdmin || isDemoMode;
 
   const handleToggleDemoAvailability = () => {
-    if (isDemoMode) {
-       notify("System settings are read-only in Demo Mode. Login to Live Mode to make changes.", "warning");
-       return;
+    if (isActionDisabled) {
+      notify("This action is restricted to the System Admin (Live) only.", "warning");
+      return;
     }
     const newState = !demoModeAvailable;
     setDemoModeAvailable(newState);
-    notify(`Demo Mode has been ${newState ? 'ENABLED' : 'DISABLED'} for all users.`, "success");
+    notify(`Public Demo Mode has been ${newState ? 'ENABLED' : 'DISABLED'} for all users.`, "success");
+  };
+
+  const handlePurgeAndLogout = () => {
+    if (isActionDisabled) {
+      notify("This action is restricted to the System Admin (Live) only.", "warning");
+      return;
+    }
+    purgeMockData();
+    notify("Mock data has been purged. You will be logged out.", "success");
+    setTimeout(() => {
+      onLogout(); // THE FIX: Use the full logout handler from props
+      setIsSettingsModalOpen(false);
+    }, 1500);
   };
 
   const NavItem = ({ id, icon: Icon, label }: { id: string, icon: any, label: string }) => (
@@ -133,7 +140,7 @@ const Layout: React.FC<LayoutProps> = ({
           <div className="text-xs font-bold text-kala-600 uppercase px-4 py-2 mt-4">System</div>
           {systemNavItems.map(item => <NavItem key={item.id} {...item} />)}
           
-          {(userRole === UserRole.ADMIN || userRole === UserRole.DAO_Governor || userRole === UserRole.SYSTEM_ADMIN_LIVE) && (
+          {(userRole === UserRole.ADMIN || userRole === UserRole.DAO_GOVERNOR || userRole === UserRole.SYSTEM_ADMIN_LIVE) && (
              <>
                <div className="text-xs font-bold text-kala-600 uppercase px-4 py-2 mt-4">Admin / DAO</div>
                {adminNavItems.map(item => <NavItem key={item.id} {...item} />)}
@@ -143,7 +150,7 @@ const Layout: React.FC<LayoutProps> = ({
 
         <div className="absolute bottom-0 w-full p-4 border-t border-kala-800 bg-kala-900">
            <button 
-             onClick={handleSettings}
+             onClick={() => setIsSettingsModalOpen(true)}
              className="flex items-center gap-3 px-4 py-2 text-slate-500 hover:text-white transition-colors w-full"
            >
               <Settings className="w-5 h-5" /> Settings
@@ -178,51 +185,74 @@ const Layout: React.FC<LayoutProps> = ({
         />
       )}
 
-      {isAdminSettingsOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
-           <div className="bg-kala-900 border border-kala-700 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
-              <div className="p-4 border-b border-kala-800 flex justify-between items-center bg-kala-800/50">
-                 <h3 className="text-white font-bold flex items-center gap-2">
-                    <ShieldCheck className="w-5 h-5 text-kala-secondary" /> System Configuration
-                 </h3>
-                 <button onClick={() => setIsAdminSettingsOpen(false)} className="text-kala-500 hover:text-white">
-                    <X className="w-5 h-5" />
-                 </button>
+      {isSettingsModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
+          <div className="bg-kala-900 border border-kala-700 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+            <div className="p-4 border-b border-kala-800 flex justify-between items-center bg-kala-800/50">
+              <h3 className="text-white font-bold flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-kala-secondary" />
+                System Configuration
+              </h3>
+              <button onClick={() => setIsSettingsModalOpen(false)} className="text-kala-500 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className={`bg-kala-800 p-4 rounded-xl border border-kala-700 transition-opacity ${isActionDisabled ? 'opacity-60' : ''}`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-white font-bold text-sm">Enable Demo Mode</h4>
+                    <p className="text-xs text-kala-400 mt-1">
+                      When enabled, users can log in to a "Demo Mode" with pre-loaded sample data.
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleToggleDemoAvailability}
+                    disabled={isActionDisabled}
+                    className={`relative w-12 h-6 rounded-full transition-colors ${demoModeAvailable ? 'bg-green-500' : 'bg-kala-700'} disabled:cursor-not-allowed`}
+                  >
+                    <span className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${demoModeAvailable ? 'translate-x-6' : 'translate-x-0'}`} />
+                  </button>
+                </div>
               </div>
-              <div className="p-6 space-y-6">
-                 <div className={`bg-kala-800 p-4 rounded-xl border border-kala-700 flex items-center justify-between ${isDemoMode ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                    <div>
-                       <h4 className="text-white font-bold text-sm flex items-center gap-2">
-                          Public Demo Mode
-                          {isDemoMode && <span className="text-[10px] bg-yellow-500/20 text-yellow-400 px-1.5 py-0.5 rounded border border-yellow-500/30">READ ONLY</span>}
-                       </h4>
-                       <p className="text-xs text-kala-400 mt-1 max-w-[200px]">
-                          Allow visitors to access the platform with mock data. Disable for production launch.
-                       </p>
-                    </div>
-                    <button 
-                      onClick={handleToggleDemoAvailability}
-                      disabled={isDemoMode}
-                      className={`relative w-12 h-6 rounded-full transition-colors ${demoModeAvailable ? 'bg-green-500' : 'bg-kala-700'} ${isDemoMode ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-                    >
-                       <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${demoModeAvailable ? 'translate-x-6' : 'translate-x-0'}`}></div>
-                    </button>
-                 </div>
-                 
-                 {isDemoMode && (
-                    <div className="bg-yellow-500/10 border border-yellow-500/20 p-3 rounded-lg flex items-start gap-2">
-                        <AlertTriangle className="w-4 h-4 text-yellow-500 shrink-0 mt-0.5" />
-                        <p className="text-xs text-yellow-200">
-                            You are currently in <b>Demo Mode</b>. Global system settings can only be changed by a verified Admin in <b>Live Mode</b>.
-                        </p>
-                    </div>
-                 )}
-                 
-                 <div className="text-xs text-center text-kala-500">
-                    Changes take effect immediately on the Login Screen.
-                 </div>
+
+              <div className={`bg-red-900/20 p-4 rounded-xl border border-red-700/50 transition-opacity ${isActionDisabled ? 'opacity-60' : ''}`}>
+                <h4 className="text-red-300 font-bold text-sm flex items-center gap-2">
+                  <Trash2 className="w-4 h-4" />
+                  Purge Demo Data
+                </h4>
+                <p className="text-xs text-red-400/80 mt-1">
+                  Permanently delete all mock users, proposals, and market items from the database.
+                </p>
+                <button
+                  onClick={handlePurgeAndLogout}
+                  disabled={isActionDisabled}
+                  className="mt-3 w-full px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-500 rounded-lg transition-colors disabled:bg-red-600/50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  <Trash2 className="w-4 h-4"/>
+                  Purge
+                </button>
               </div>
-           </div>
+
+              {!isLiveAdmin && (
+                <div className="bg-yellow-500/10 border border-yellow-500/20 p-3 rounded-lg flex items-start gap-3">
+                  <AlertTriangle className="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-bold text-yellow-300">Permission Denied</p>
+                    <p className="text-xs text-yellow-400/80 mt-1">
+                      Your role ({userRole}) does not have permission to change these settings. Access is restricted to designated administrators in Live Mode.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+            </div>
+             <div className="p-4 bg-kala-800/50 border-t border-kala-800">
+                <button onClick={() => setIsSettingsModalOpen(false)} className="w-full px-4 py-2 text-sm font-semibold text-white bg-kala-700 hover:bg-kala-600 rounded-lg transition-colors">
+                    Close
+                </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

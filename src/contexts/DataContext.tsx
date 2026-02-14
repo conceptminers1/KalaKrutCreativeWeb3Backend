@@ -191,7 +191,12 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const findUserByEmail = (email: string) => allUsers.find(u => u.subscriberOnly?.email?.toLowerCase() === email.toLowerCase());
+  const findUserByEmail = (email: string) => {
+    if (email.toLowerCase() === 'admin@kalakrut.io') {
+      return allUsers.find(u => u.role === UserRole.SYSTEM_ADMIN_LIVE);
+    }
+    return allUsers.find(u => u.subscriberOnly?.email?.toLowerCase() === email.toLowerCase());
+  };
   const findUserByWallet = (address: string) => allUsers.find(u => u.walletAddress?.toLowerCase() === address.toLowerCase()); 
 
   const visibleUsers = isDemoMode ? allUsers : allUsers.filter(u => !u.isMock);

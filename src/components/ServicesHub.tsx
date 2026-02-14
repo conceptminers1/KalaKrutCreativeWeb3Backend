@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ServiceListing, UserRole } from '../types';
+import { ServiceListing, UserRole, User } from '../types';
 import { Briefcase, Star, Users, ArrowRight, Zap, Bot, ExternalLink, ShieldCheck, Lock, FileSpreadsheet, X, MessageSquare, ShieldAlert } from 'lucide-react';
 import PaymentGateway from '../components/PaymentGateway';
 import { checkContentForViolation, MODERATION_WARNING_TEXT } from '../services/moderationService';
@@ -37,12 +37,12 @@ const MEMBER_SERVICES: ServiceListing[] = [
 ];
 
 interface ServicesHubProps {
-  userRole?: UserRole;
+  user?: User;
   onNavigateToLeads?: () => void;
   onBlockUser: () => void;
 }
 
-const ServicesHub: React.FC<ServicesHubProps> = ({ userRole, onNavigateToLeads, onBlockUser }) => {
+const ServicesHub: React.FC<ServicesHubProps> = ({ user, onNavigateToLeads, onBlockUser }) => {
   const { notify } = useToast();
   const [activeTab, setActiveTab] = useState<'platform' | 'members'>('platform');
   const [selectedService, setSelectedService] = useState<ServiceListing | null>(null);
@@ -70,6 +70,8 @@ const ServicesHub: React.FC<ServicesHubProps> = ({ userRole, onNavigateToLeads, 
     setServiceToContact(providerName);
     setShowContactModal(true);
   };
+
+  const canViewMasterSheet = user?.role === UserRole.SYSTEM_ADMIN_LIVE;
 
   return (
     <div className="space-y-6 relative">
@@ -136,7 +138,7 @@ const ServicesHub: React.FC<ServicesHubProps> = ({ userRole, onNavigateToLeads, 
                    </a>
 
                    {/* Admin Only: View Global Sheet */}
-                   {userRole === UserRole.ADMIN ? (
+                   {canViewMasterSheet ? (
                      <a 
                        href="https://docs.google.com/spreadsheets/d/1_JDe6kZ9SiEMLueA8isrVMKLogYbSwpO3utV8_BrlQg/edit?usp=drivesdk"
                        target="_blank"                       rel="noreferrer"
@@ -165,7 +167,7 @@ const ServicesHub: React.FC<ServicesHubProps> = ({ userRole, onNavigateToLeads, 
                    )}
                  </div>
                  
-                 {userRole === UserRole.ADMIN ? (
+                 {canViewMasterSheet ? (
                     <p className="text-xs text-green-400 mt-4 flex items-center gap-1">
                        <CheckCircleIcon /> Master Database Access Granted (Admin)
                     </p>

@@ -102,13 +102,15 @@ const Home: React.FC<HomeProps> = ({ onLogin, onViewNews, onJoin }) => {
          return;
       }
 
-
+      const roleToLogin = (loginMode === 'live' && selectedRoleForLogin === UserRole.ADMIN) 
+        ? UserRole.SYSTEM_ADMIN_LIVE 
+        : selectedRoleForLogin;
 
       // Using startTransition to prevent suspension errors during view swaps
       startTransition(() => {
         setDemoMode(loginMode);
         setTimeout(() => {
-          onLogin(selectedRoleForLogin, method, { email, password });
+          onLogin(roleToLogin, method, { email, password });
           setIsLoading(false); 
         }, 500);
       });

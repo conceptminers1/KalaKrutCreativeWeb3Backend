@@ -330,6 +330,7 @@ const AppContent: React.FC = () => {
     if (!isAppLoggedIn || !currentUser) {
       return <PageLoader />;
     }
+    const isAdmin = currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN_LIVE;
     return (
       <div className={isPending ? "opacity-70 transition-opacity pointer-events-none" : "opacity-100 transition-opacity"}>
         <Suspense fallback={<PageLoader />}>
@@ -337,27 +338,27 @@ const AppContent: React.FC = () => {
             switch (currentView) {
               case 'search_results': return <SearchResults query={searchQuery} onNavigate={navigate} />;
               case 'sitemap': return <Sitemap onNavigate={navigate} />;
-              case 'system_docs': return currentUserRole === UserRole.ADMIN ? <SystemDiagrams /> : <div className="text-red-400 bg-kala-800 p-8 rounded-xl text-center">Access Denied</div>;
+              case 'system_docs': return isAdmin ? <SystemDiagrams /> : <div className="text-red-400 bg-kala-800 p-8 rounded-xl text-center">Access Denied</div>;
               case 'whitepaper': return <WhitePaper />;
               case 'register_artist': return <ArtistRegistration onComplete={() => { setIsProfileComplete(true); navigate('dashboard'); }} onBlockUser={handleBlockUser} />;
               case 'booking': return <BookingHub onBlockUser={handleBlockUser} onOpenExchange={() => setShowTokenExchange(true)} />;
               case 'governance': return <DaoGovernance currentUserRole={currentUserRole} onOpenExchange={() => setShowTokenExchange(true)} />;
               case 'marketplace': return <Marketplace onBlockUser={handleBlockUser} onChat={(seller) => { setChatRecipient({ ...MOCK_ARTIST_PROFILE, name: seller.name, avatar: seller.avatar }); setShowChat(true); }} />;
-              case 'services': return <ServicesHub userRole={currentUserRole} onNavigateToLeads={() => { setSelectedProfile(currentUser); setProfileTab('leads'); navigate('profile'); }} onBlockUser={handleBlockUser} />;
+              case 'services': return <ServicesHub user={currentUser} onNavigateToLeads={() => { setSelectedProfile(currentUser); setProfileTab('leads'); navigate('profile'); }} onBlockUser={handleBlockUser} />;
               case 'roster': return <Roster onNavigate={navigate} onViewProfile={handleViewProfile} />;
               case 'forum': return <Forum onBlockUser={handleBlockUser} />;
               case 'studio': return <CreativeStudio onBlockUser={handleBlockUser} />;
-              case 'admin_email_templates': return currentUserRole === UserRole.ADMIN ? <AdminEmailTemplates isDemoMode={isDemoMode} /> : <div>Access Denied</div>;
+              case 'admin_email_templates': return isAdmin ? <AdminEmailTemplates isDemoMode={isDemoMode} /> : <div>Access Denied</div>;
               case 'membership': return <MembershipPlans currentUser={currentUser} />;
               case 'my_circle': return <MyCircle currentUser={currentUser} />;
-              case 'leads': return currentUserRole === UserRole.ADMIN ? <AdminLeads leads={leads} addLead={addLead} /> : <LeadsAndAi leads={leads} addLead={addLead} />;
+              case 'leads': return isAdmin ? <AdminLeads leads={leads} addLead={addLead} /> : <LeadsAndAi leads={leads} addLead={addLead} />;
               case 'leads_and_ai': return <LeadsAndAi leads={leads} addLead={addLead} />;
-              case 'admin_support': return currentUserRole === UserRole.ADMIN ? <AdminSupport moderationCases={moderationCases} onDecision={handleAdminDecision} /> : <div>Access Denied</div>;
-              case 'contracts': return (currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.DAO_GOVERNOR) ? <AdminContracts onBlockUser={handleBlockUser} onChat={(name, avatar) => { setChatRecipient({ ...MOCK_ARTIST_PROFILE, name, avatar }); setShowChat(true); }} /> : <div>Access Denied</div>;
-              case 'treasury': return (currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.DAO_GOVERNOR) ? <TreasuryDashboard /> : <div>Access Denied</div>;
-              case 'hrd': return (currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.DAO_GOVERNOR) ? <HRDashboard /> : <div>Access Denied</div>;
+              case 'admin_support': return isAdmin ? <AdminSupport moderationCases={moderationCases} onDecision={handleAdminDecision} /> : <div>Access Denied</div>;
+              case 'contracts': return (isAdmin || currentUserRole === UserRole.DAO_GOVERNOR) ? <AdminContracts onBlockUser={handleBlockUser} onChat={(name, avatar) => { setChatRecipient({ ...MOCK_ARTIST_PROFILE, name, avatar }); setShowChat(true); }} /> : <div>Access Denied</div>;
+              case 'treasury': return (isAdmin || currentUserRole === UserRole.DAO_GOVERNOR) ? <TreasuryDashboard /> : <div>Access Denied</div>;
+              case 'hrd': return (isAdmin || currentUserRole === UserRole.DAO_GOVERNOR) ? <HRDashboard /> : <div>Access Denied</div>;
               case 'profile': return <ArtistProfile artist={selectedProfile} onChat={handleOpenChat} onBook={() => navigate('booking')} isOwnProfile={selectedProfile.id === currentUser.id} isBlocked={isUserBlocked} onUpdateProfile={handleUpdateUserProfile} initialTab={profileTab} />;
-              case 'analytics': return currentUserRole === UserRole.ADMIN ? <AnalyticsDashboard /> : <div>Access Denied</div>;
+              case 'analytics': return isAdmin ? <AnalyticsDashboard /> : <div>Access Denied</div>;
               case 'announcements_internal': return <Announcements onBack={() => navigate('dashboard')} />;
               case 'dashboard':
               default:

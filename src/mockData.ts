@@ -135,7 +135,7 @@ export const MOCK_USERS_BY_ROLE: Record<UserRole, ArtistProfile> = {
   [UserRole.SPONSOR]: { ...MOCK_ARTIST_PROFILE, id: 'u_sponsor', name: 'RedBull Music', role: UserRole.SPONSOR, avatar: 'https://picsum.photos/seed/sponsor1/200', location: 'Global' },
   [UserRole.REVELLER]: { ...MOCK_ARTIST_PROFILE, id: 'u_reveller', name: 'Alex Fan', role: UserRole.REVELLER, avatar: 'https://picsum.photos/seed/fan1/200', level: 2, xp: 150 },
   [UserRole.ADMIN]: { ...MOCK_ARTIST_PROFILE, id: 'u_admin', name: 'System Admin', role: UserRole.ADMIN, avatar: 'https://picsum.photos/seed/admin/200', level: 99 },
-  [UserRole.SYSTEM_ADMIN_LIVE]: { ...MOCK_ARTIST_PROFILE, id: 'u_sys_admin_live', name: 'Owner', role: UserRole.SYSTEM_ADMIN_LIVE, avatar: 'https://picsum.photos/seed/sysadmin/200', level: 100, password: 'live' },
+  [UserRole.SYSTEM_ADMIN_LIVE]: { ...MOCK_ARTIST_PROFILE, id: 'u_sys_admin_live', name: 'Kala Owner', role: UserRole.SYSTEM_ADMIN_LIVE, avatar: 'https://picsum.photos/seed/sysadmin/200', level: 100, password: 'live' },
   [UserRole.ORGANIZER]: { ...MOCK_ARTIST_PROFILE, id: 'u_org', name: 'Festival Co.', role: UserRole.ORGANIZER, avatar: 'https://picsum.photos/seed/org/200' },
   [UserRole.DAO_GOVERNOR]: MOCK_DAO_GOVERNOR_PROFILE,
   [UserRole.DAO_MEMBER]: MOCK_DAO_MEMBER_PROFILE,
