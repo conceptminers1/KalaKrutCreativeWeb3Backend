@@ -38,11 +38,11 @@ const MEMBER_SERVICES: ServiceListing[] = [
 
 interface ServicesHubProps {
   userRole?: UserRole;
-  onNavigateToProfile?: () => void;
+  onNavigateToLeads?: () => void;
   onBlockUser: () => void;
 }
 
-const ServicesHub: React.FC<ServicesHubProps> = ({ userRole, onNavigateToProfile, onBlockUser }) => {
+const ServicesHub: React.FC<ServicesHubProps> = ({ userRole, onNavigateToLeads, onBlockUser }) => {
   const { notify } = useToast();
   const [activeTab, setActiveTab] = useState<'platform' | 'members'>('platform');
   const [selectedService, setSelectedService] = useState<ServiceListing | null>(null);
@@ -139,8 +139,7 @@ const ServicesHub: React.FC<ServicesHubProps> = ({ userRole, onNavigateToProfile
                    {userRole === UserRole.ADMIN ? (
                      <a 
                        href="https://docs.google.com/spreadsheets/d/1_JDe6kZ9SiEMLueA8isrVMKLogYbSwpO3utV8_BrlQg/edit?usp=drivesdk"
-                       target="_blank"
-                       rel="noreferrer"
+                       target="_blank"                       rel="noreferrer"
                        className="bg-green-700 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-lg transition-colors border border-green-600 flex items-center gap-2"
                      >
                        <ShieldCheck className="w-4 h-4" /> View Admin Master Sheet
@@ -154,9 +153,9 @@ const ServicesHub: React.FC<ServicesHubProps> = ({ userRole, onNavigateToProfile
                         >
                            Activate Auto-Sync ($15/mo)
                         </button>
-                        {onNavigateToProfile && (
+                        {onNavigateToLeads && (
                            <button 
-                              onClick={onNavigateToProfile}
+                              onClick={onNavigateToLeads}
                               className="text-indigo-300 hover:text-white font-medium flex items-center gap-2 px-2"
                            >
                               View Saved Leads <ArrowRight className="w-4 h-4" />

@@ -122,6 +122,7 @@ const AppContent: React.FC = () => {
   const [isUserBlocked, setIsUserBlocked] = useState(false);
   const [moderationCases, setModerationCases] = useState<ModerationCase[]>(MOCK_MODERATION_CASES);
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [profileTab, setProfileTab] = useState('overview');
 
   const { isConnected: isWalletConnected, connect: connectWallet, disconnect: disconnectWallet, walletAddress, balances } = useWallet();
   const { notify } = useToast();
@@ -255,6 +256,7 @@ const AppContent: React.FC = () => {
          coverImage: `https://picsum.photos/seed/${member.id}/1200/400`
       };
       setSelectedProfile(profile as IArtistProfile);
+      setProfileTab('overview');
       navigate('profile');
     }
   };
@@ -314,7 +316,7 @@ const AppContent: React.FC = () => {
                   <></>
                 )}
               </div>
-              <div onClick={() => { setSelectedProfile(currentUser); navigate('profile'); }} className="w-10 h-10 rounded-full bg-gradient-to-br from-kala-secondary to-purple-600 p-0.5 cursor-pointer hover:scale-105 transition-transform ml-2" title="View My Profile">
+              <div onClick={() => { setSelectedProfile(currentUser); setProfileTab('overview'); navigate('profile'); }} className="w-10 h-10 rounded-full bg-gradient-to-br from-kala-secondary to-purple-600 p-0.5 cursor-pointer hover:scale-105 transition-transform ml-2" title="View My Profile">
                 <img src={currentUser.avatar} alt="Me" className="w-full h-full rounded-full border-2 border-kala-900 object-cover" />
               </div>
               <button onClick={handleLogout} className="text-kala-500 hover:text-red-400 transition-colors ml-2" title="Log Out"><LogOut className="w-5 h-5" /></button>
@@ -341,7 +343,7 @@ const AppContent: React.FC = () => {
               case 'booking': return <BookingHub onBlockUser={handleBlockUser} onOpenExchange={() => setShowTokenExchange(true)} />;
               case 'governance': return <DaoGovernance currentUserRole={currentUserRole} onOpenExchange={() => setShowTokenExchange(true)} />;
               case 'marketplace': return <Marketplace onBlockUser={handleBlockUser} onChat={(seller) => { setChatRecipient({ ...MOCK_ARTIST_PROFILE, name: seller.name, avatar: seller.avatar }); setShowChat(true); }} />;
-              case 'services': return <ServicesHub userRole={currentUserRole} onNavigateToProfile={() => { setSelectedProfile(currentUser); navigate('profile'); }} onBlockUser={handleBlockUser} />;
+              case 'services': return <ServicesHub userRole={currentUserRole} onNavigateToLeads={() => { setSelectedProfile(currentUser); setProfileTab('leads'); navigate('profile'); }} onBlockUser={handleBlockUser} />;
               case 'roster': return <Roster onNavigate={navigate} onViewProfile={handleViewProfile} />;
               case 'forum': return <Forum onBlockUser={handleBlockUser} />;
               case 'studio': return <CreativeStudio onBlockUser={handleBlockUser} />;
@@ -354,7 +356,7 @@ const AppContent: React.FC = () => {
               case 'contracts': return (currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.DAO_GOVERNOR) ? <AdminContracts onBlockUser={handleBlockUser} onChat={(name, avatar) => { setChatRecipient({ ...MOCK_ARTIST_PROFILE, name, avatar }); setShowChat(true); }} /> : <div>Access Denied</div>;
               case 'treasury': return (currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.DAO_GOVERNOR) ? <TreasuryDashboard /> : <div>Access Denied</div>;
               case 'hrd': return (currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.DAO_GOVERNOR) ? <HRDashboard /> : <div>Access Denied</div>;
-              case 'profile': return <ArtistProfile artist={selectedProfile} onChat={handleOpenChat} onBook={() => navigate('booking')} isOwnProfile={selectedProfile.id === currentUser.id} isBlocked={isUserBlocked} onUpdateProfile={handleUpdateUserProfile} />;
+              case 'profile': return <ArtistProfile artist={selectedProfile} onChat={handleOpenChat} onBook={() => navigate('booking')} isOwnProfile={selectedProfile.id === currentUser.id} isBlocked={isUserBlocked} onUpdateProfile={handleUpdateUserProfile} initialTab={profileTab} />;
               case 'analytics': return currentUserRole === UserRole.ADMIN ? <AnalyticsDashboard /> : <div>Access Denied</div>;
               case 'announcements_internal': return <Announcements onBack={() => navigate('dashboard')} />;
               case 'dashboard':

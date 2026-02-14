@@ -55,9 +55,10 @@ interface ArtistProfileProps {
   isOwnProfile?: boolean;
   isBlocked?: boolean; 
   onUpdateProfile?: (data: Partial<IArtistProfile>) => void;
+  initialTab?: string;
 }
 
-const ArtistProfile: React.FC<ArtistProfileProps> = ({ artist, onChat, onBook, isOwnProfile = false, isBlocked = false, onUpdateProfile }) => {
+const ArtistProfile: React.FC<ArtistProfileProps> = ({ artist, onChat, onBook, isOwnProfile = false, isBlocked = false, onUpdateProfile, initialTab = 'overview' }) => {
   const { notify } = useToast();
   const [activeTab, setActiveTab] = useState<'overview' | 'invest' | 'settings' | 'financials' | 'leads' | 'guide'>('overview');
   const [showPayoutModal, setShowPayoutModal] = useState(false);
@@ -78,8 +79,10 @@ const ArtistProfile: React.FC<ArtistProfileProps> = ({ artist, onChat, onBook, i
     setLocalArtist(artist);
     if (!isOwnProfile) {
        setActiveTab('overview');
+    } else {
+       setActiveTab(initialTab as any);
     }
-  }, [artist, isOwnProfile]);
+  }, [artist, isOwnProfile, initialTab]);
 
   // Check if user is a paid subscriber (Not a Guest)
   const isSubscribed = localArtist.subscription?.status === 'Active' && 
