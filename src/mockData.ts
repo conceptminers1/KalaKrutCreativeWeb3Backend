@@ -150,23 +150,10 @@ export const MOCK_ROSTER: RosterMember[] = [
     avatar: 'https://picsum.photos/seed/u1/200',
     location: 'Brooklyn, NY',
     verified: true,
-    assets: {
-      ips: ['2'],
-      events: ['1'],
-      services: ['2'],
-      products: ['5'],
-      nfts: ['3'],
-      contents: [],
-      equipment: [],
-      instruments: [],
-      tickets: []
-    },
+    assets: { ips: ['2'], events: ['1'], services: ['2'], products: ['5'], nfts: ['3'], contents: [], equipment: [], instruments: [], tickets: [] },
     rating: 4.9,
-    subscriberOnly: {
-      email: 'booking@lunaeclipse.com',
-      phone: '+1 555 019 2834',
-      agentContact: 'Creative Artists Agency'
-    }
+    subscriberOnly: { email: 'booking@lunaeclipse.com', phone: '+1 555 019 2834', agentContact: 'Creative Artists Agency' },
+    walletAddress: '0xAbc...123'
   },
   {
     id: 'r2',
@@ -175,23 +162,10 @@ export const MOCK_ROSTER: RosterMember[] = [
     avatar: 'https://picsum.photos/seed/venue1/200',
     location: 'London, UK',
     verified: true,
-     assets: {
-      ips: ['0'],
-      events: ['1'],
-      services: ['2'],
-      products: ['0'],
-      nfts: ['10'],
-      contents: [],
-      equipment: [],
-      instruments: [],
-      tickets: []
-    },
+    assets: { ips: ['0'], events: ['1'], services: ['2'], products: ['0'], nfts: ['10'], contents: [], equipment: [], instruments: [], tickets: [] },
     rating: 4.8,
-    subscriberOnly: {
-      email: 'events@thewarehouse.ldn',
-      phone: '+44 20 7946 0123',
-      agentContact: 'Internal Booking Team'
-    }
+    subscriberOnly: { email: 'events@thewarehouse.ldn', phone: '+44 20 7946 0123', agentContact: 'Internal Booking Team' },
+    walletAddress: '0xDef...456'
   },
   {
     id: 'r3',
@@ -200,48 +174,94 @@ export const MOCK_ROSTER: RosterMember[] = [
     avatar: 'https://picsum.photos/seed/sponsor1/200',
     location: 'San Francisco, CA',
     verified: true,
-     assets: {
-      ips: ['0'],
-      events: ['0'],
-      services: ['2'],
-      products: ['0'],
-      nfts: ['0'],
-      contents: [],
-      equipment: [],
-      instruments: [],
-      tickets: []
-    },
+    assets: { ips: ['0'], events: ['0'], services: ['2'], products: ['0'], nfts: ['0'], contents: [], equipment: [], instruments: [], tickets: [] },
     rating: 5.0,
-    subscriberOnly: {
-      email: 'partnerships@techstart.io',
-      phone: '+1 415 555 0100',
-      agentContact: 'Global Brand Director'
-    }
+    subscriberOnly: { email: 'partnerships@techstart.io', phone: '+1 415 555 0100', agentContact: 'Global Brand Director' },
+    walletAddress: '0xGhi...789'
   },
-    {
+  {
     id: 'u_dao_gov',
     name: 'Governor Alice',
     role: UserRole.DAO_GOVERNOR,
     avatar: 'https://picsum.photos/seed/dao/200',
     location: 'Decentralized',
     verified: true,
-     assets: {
-      ips: ['0'],
-      events: ['0'],
-      services: ['2'],
-      products: ['0'],
-      nfts: ['0'],
-      contents: [],
-      equipment: [],
-      instruments: [],
-      tickets: []
-    },
+    assets: { ips: ['0'], events: ['0'], services: ['2'], products: ['0'], nfts: ['0'], contents: [], equipment: [], instruments: [], tickets: [] },
     rating: 5.0,
-    subscriberOnly: {
-      email: 'governor.alice@kalakrut.io',
-      phone: '',
-      agentContact: ''
-    }
+    subscriberOnly: { email: 'governor.alice@kalakrut.io', phone: '', agentContact: '' },
+    walletAddress: '0xJkl...012'
+  },
+  {
+    id: 'r4',
+    name: 'DJ Quantum',
+    role: UserRole.ARTIST,
+    avatar: 'https://picsum.photos/seed/u4/200',
+    location: 'Berlin, DE',
+    verified: false,
+    assets: { ips: ['1'], events: ['2'], services: ['0'], products: ['1'], nfts: ['5'], contents: [], equipment: [], instruments: [], tickets: [] },
+    rating: 4.7,
+    subscriberOnly: { email: 'contact@djquantum.com', phone: '+49 176 12345678', agentContact: 'Self-managed' },
+    walletAddress: '0xMno...345'
+  },
+  {
+    id: 'u_dao_member',
+    name: 'Leo Valdez',
+    role: UserRole.DAO_MEMBER,
+    avatar: 'https://picsum.photos/seed/daomember/200',
+    location: 'Mexico City, MX',
+    verified: true,
+    assets: { ips: ['0'], events: ['0'], services: ['1'], products: ['0'], nfts: ['2'], contents: [], equipment: [], instruments: [], tickets: [] },
+    rating: 4.8,
+    subscriberOnly: { email: 'leo.v@email.com', phone: '', agentContact: '' },
+    walletAddress: '0xPqr...678'
+  },
+  {
+    id: 'u_sponsor_2',
+    name: 'RedBull Music',
+    role: UserRole.SPONSOR,
+    avatar: 'https://picsum.photos/seed/sponsor2/200',
+    location: 'Global',
+    verified: true,
+    assets: { ips: ['1'], events: ['5'], services: ['1'], products: ['0'], nfts: ['0'], contents: [], equipment: [], instruments: [], tickets: [] },
+    rating: 4.9,
+    subscriberOnly: { email: 'music@redbull.com', phone: '', agentContact: 'Artist Relations' },
+    walletAddress: '0xStu...901'
+  },
+  {
+    id: 'u_reveller',
+    name: 'Alex Fan',
+    role: UserRole.REVELLER,
+    avatar: 'https://picsum.photos/seed/fan1/200',
+    location: 'Paris, FR',
+    verified: false,
+    assets: { ips: ['0'], events: ['0'], services: ['0'], products: ['0'], nfts: ['8'], contents: [], equipment: [], instruments: [], tickets: [] },
+    rating: 4.5,
+    subscriberOnly: { email: '', phone: '', agentContact: '' },
+    walletAddress: '0xVwx...234'
+  },
+  {
+    id: 'u_org',
+    name: 'Festival Co.',
+    role: UserRole.ORGANIZER,
+    avatar: 'https://picsum.photos/seed/org/200',
+    location: 'Amsterdam, NL',
+    verified: true,
+    assets: { ips: ['0'], events: ['3'], services: ['2'], products: ['0'], nfts: ['1'], contents: [], equipment: [], instruments: [], tickets: [] },
+    rating: 4.6,
+    subscriberOnly: { email: 'contact@festivalco.com', phone: '', agentContact: 'Booking Department' },
+    walletAddress: '0xYza...567'
+  },
+  {
+    id: 'u_service',
+    name: 'Legal Eagle',
+    role: UserRole.SERVICE_PROVIDER,
+    avatar: 'https://picsum.photos/seed/legal/200',
+    location: 'New York, NY',
+    verified: true,
+    assets: { ips: ['1'], events: ['0'], services: ['3'], products: ['0'], nfts: ['0'], contents: [], equipment: [], instruments: [], tickets: [] },
+    rating: 5.0,
+    subscriberOnly: { email: 'consult@legaleagle.com', phone: '', agentContact: '' },
+    walletAddress: '0xBcd...890'
   }
 ];
 
