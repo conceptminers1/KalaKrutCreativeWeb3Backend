@@ -79,6 +79,12 @@ export interface CircleMember {
     role: string;
 }
 
+export interface Artist {
+    id: string;
+    name: string;
+    bio: string; // from MusicBrainz 'disambiguation'
+  }
+
 export interface ArtistProfile extends User {
   coverImage: string;
   bio: string;

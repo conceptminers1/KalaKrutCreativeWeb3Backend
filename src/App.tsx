@@ -386,7 +386,12 @@ const AppContent: React.FC = () => {
   }
 
   return (
-    <Layout currentView={currentView} userRole={currentUserRole} onNavigate={navigate}>
+    <Layout 
+      currentView={currentView} 
+      userRole={currentUserRole} 
+      onNavigate={navigate}
+      onLogout={handleLogout}
+    >
        {showChat && (
          <ChatOverlay recipientName={chatRecipient.name} recipientAvatar={chatRecipient.avatar} onClose={() => setShowChat(false)} onNavigateToBooking={() => { setShowChat(false); navigate('booking'); }} onBlockUser={handleBlockUser} />
        )}

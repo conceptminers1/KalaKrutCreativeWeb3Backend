@@ -15,25 +15,20 @@ interface LayoutProps {
   userRole: UserRole;
   onNavigate: (view: string) => void;
   currentView: string;
+  onLogout: () => void;
 }
 
 const Layout: React.FC<LayoutProps> = ({ 
   children, 
   userRole, 
   onNavigate, 
-  currentView 
+  currentView,
+  onLogout
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAdminSettingsOpen, setIsAdminSettingsOpen] = useState(false);
   const { isDemoMode, demoModeAvailable, setDemoModeAvailable } = useData();
   const { notify } = useToast();
-  const { disconnect } = useWallet();
-
-  const handleLogout = () => {
-    disconnect();
-    onNavigate('home');
-    notify("Logged out successfully.", "info");
-  };
 
   const handleSettings = () => {
     if (userRole === UserRole.SYSTEM_ADMIN_LIVE) {
@@ -154,7 +149,7 @@ const Layout: React.FC<LayoutProps> = ({
               <Settings className="w-5 h-5" /> Settings
            </button>
            <button 
-             onClick={handleLogout}
+             onClick={onLogout}
              className="flex items-center gap-3 px-4 py-2 text-red-400 hover:text-red-300 transition-colors w-full mt-1"
            >
               <LogOut className="w-5 h-5" /> Disconnect
