@@ -9,6 +9,7 @@ import Sitemap from './components/Sitemap';
 import SystemDiagrams from './components/SystemDiagrams';
 import WhitePaper from './components/WhitePaper';
 import TokenExchange from './components/TokenExchange';
+import { Web3Provider } from './contexts/Web3Context';
 import { WalletProvider, useWallet } from './contexts/WalletContext';
 import { ToastProvider, useToast } from './contexts/ToastContext';
 import { DataProvider, useData } from './contexts/DataContext';
@@ -751,7 +752,9 @@ const App: React.FC = () => {
       <ToastProvider>
         <WalletProvider>
           <DataProvider>
-            <AppContent />
+            <Web3Provider>
+              <AppContent />
+            </Web3Provider>
           </DataProvider>
         </WalletProvider>
       </ToastProvider>
