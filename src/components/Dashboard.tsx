@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useWallet } from '../contexts/WalletContext';
 import { ArtistProfile } from '../types';
@@ -27,15 +26,25 @@ const StatCard = ({ icon, title, value, sub, trend, primary = false }: any) => (
   >
     <div className="flex items-start justify-between">
       <div>
-        <p className={`text-sm font-medium ${primary ? 'text-green-200' : 'text-kala-400'}`}>{title}</p>
+        <p
+          className={`text-sm font-medium ${primary ? 'text-green-200' : 'text-kala-400'}`}
+        >
+          {title}
+        </p>
         <h3 className="text-2xl font-bold text-white mt-1">{value}</h3>
       </div>
-      <div className={`p-3 rounded-lg ${primary ? 'bg-green-500/20 text-green-300' : 'bg-kala-700 text-kala-300'}`}>
+      <div
+        className={`p-3 rounded-lg ${primary ? 'bg-green-500/20 text-green-300' : 'bg-kala-700 text-kala-300'}`}
+      >
         {icon}
       </div>
     </div>
     <p className="text-xs text-kala-400 mt-3">{sub}</p>
-    <p className={`text-xs font-bold mt-1 ${primary ? 'text-green-300' : 'text-green-400'}`}>{trend}</p>
+    <p
+      className={`text-xs font-bold mt-1 ${primary ? 'text-green-300' : 'text-green-400'}`}
+    >
+      {trend}
+    </p>
   </div>
 );
 
@@ -44,9 +53,13 @@ const ActionCard = ({ icon, title, subtitle, onClick }: any) => (
     onClick={onClick}
     className="bg-kala-800/50 border border-kala-700 rounded-xl p-5 text-center flex flex-col items-center justify-center gap-3 cursor-pointer group hover:bg-kala-800 transition-colors transform hover:-translate-y-1 duration-300"
   >
-    <div className="text-cyan-400 group-hover:scale-110 transition-transform">{icon}</div>
+    <div className="text-cyan-400 group-hover:scale-110 transition-transform">
+      {icon}
+    </div>
     <div>
-      <h4 className="font-bold text-white group-hover:text-cyan-300 transition-colors">{title}</h4>
+      <h4 className="font-bold text-white group-hover:text-cyan-300 transition-colors">
+        {title}
+      </h4>
       <p className="text-xs text-kala-400">{subtitle}</p>
     </div>
   </div>
@@ -60,7 +73,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-1">Welcome back, {user.name}</h1>
+          <h1 className="text-3xl font-bold text-white mb-1">
+            Welcome back, {user.name}
+          </h1>
           <p className="text-kala-400">
             Role: {user.role} • {user.location}
           </p>
@@ -110,7 +125,18 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
           icon={<Calendar size={24} />}
           title="Active Gigs"
           value="3"
-          sub={<a href="#" onClick={(e) => { e.preventDefault(); onNavigate('booking'); }} className="text-cyan-400 hover:underline">View Details</a>}
+          sub={
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                onNavigate('booking');
+              }}
+              className="text-cyan-400 hover:underline"
+            >
+              View Details
+            </a>
+          }
           trend=" "
         />
         <StatCard
@@ -158,7 +184,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
           </div>
           <div>
             <h4 className="font-bold text-white">Community Directory</h4>
-            <p className="text-sm text-kala-400">Ensure your profile is up to date in the ArtistCatalog database for automated matchmaking.</p>
+            <p className="text-sm text-kala-400">
+              Ensure your profile is up to date in the ArtistCatalog database
+              for automated matchmaking.
+            </p>
           </div>
         </div>
         <button
@@ -172,18 +201,27 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
       {/* Go Mobile & Platform News */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-green-900/20 border border-green-500/30 rounded-xl p-6 flex items-center justify-between gap-4">
-           <div>
-             <h4 className="font-bold text-white">Go Mobile</h4>
-             <p className="text-sm text-green-200/80 mt-1">Download the KalaKrut Android App for real-time notifications and mobile ticketing.</p>
-             <button className="mt-4 px-4 py-2 bg-slate-200 text-black font-bold rounded-lg text-sm flex items-center gap-2 hover:bg-white">
-                Get on Google Play
-             </button>
-           </div>
-           <img src="/gplay-qr.png" alt="Google Play QR Code" className="w-24 h-24 object-contain" />
+          <div>
+            <h4 className="font-bold text-white">Go Mobile</h4>
+            <p className="text-sm text-green-200/80 mt-1">
+              Download the KalaKrut Android App for real-time notifications and
+              mobile ticketing.
+            </p>
+            <button className="mt-4 px-4 py-2 bg-slate-200 text-black font-bold rounded-lg text-sm flex items-center gap-2 hover:bg-white">
+              Get on Google Play
+            </button>
+          </div>
+          <img
+            src="/gplay-qr.png"
+            alt="Google Play QR Code"
+            className="w-24 h-24 object-contain"
+          />
         </div>
         <div className="bg-kala-800/50 border border-kala-700 rounded-xl p-6 flex flex-col">
           <h4 className="font-bold text-white">Platform News</h4>
-          <p className="text-sm text-kala-400 mt-1 flex-grow">Stay updated with the latest features and community stories.</p>
+          <p className="text-sm text-kala-400 mt-1 flex-grow">
+            Stay updated with the latest features and community stories.
+          </p>
           <button
             onClick={() => onNavigate('announcements_internal')}
             className="mt-4 w-full px-4 py-2 bg-kala-700 hover:bg-kala-600 border border-kala-600 rounded-lg text-white font-semibold text-sm flex items-center justify-center gap-2"

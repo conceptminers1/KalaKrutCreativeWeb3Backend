@@ -1,34 +1,57 @@
-
-import { 
-  LeaderboardEntry, 
-  UserRole, 
-  ArtistProfile, 
-  MarketplaceItem, 
-  RosterMember, 
-  ServiceListing, 
-  Lead, 
-  ForumThread, 
+import {
+  LeaderboardEntry,
+  UserRole,
+  ArtistProfile,
+  MarketplaceItem,
+  RosterMember,
+  ServiceListing,
+  Lead,
+  ForumThread,
   Article,
   Proposal,
   TreasuryAsset,
   StaffMember,
   ModerationCase,
   SupportTicket,
-  CircleMember
+  CircleMember,
 } from './types';
 
 // --- MOCK CIRCLE DATA ---
 const mockFollowers: CircleMember[] = [
-  { id: 'f1', name: 'Elena Vance', avatar: 'https://i.pravatar.cc/150?u=f1', role: 'Vocalist' },
-  { id: 'f2', name: 'Marcus Cole', avatar: 'https://i.pravatar.cc/150?u=f2', role: 'Producer' },
-  { id: 'f3', name: 'Aria Chen', avatar: 'https://i.pravatar.cc/150?u=f3', role: 'Reveller' },
+  {
+    id: 'f1',
+    name: 'Elena Vance',
+    avatar: 'https://i.pravatar.cc/150?u=f1',
+    role: 'Vocalist',
+  },
+  {
+    id: 'f2',
+    name: 'Marcus Cole',
+    avatar: 'https://i.pravatar.cc/150?u=f2',
+    role: 'Producer',
+  },
+  {
+    id: 'f3',
+    name: 'Aria Chen',
+    avatar: 'https://i.pravatar.cc/150?u=f3',
+    role: 'Reveller',
+  },
 ];
 
 const mockBusinessAssociates: CircleMember[] = [
-  { id: 'b1', name: 'Julian Cross', avatar: 'https://i.pravatar.cc/150?u=b1', role: 'Venue Manager' },
-  { id: 'b2', name: 'Starlight Booking', avatar: 'https://i.pravatar.cc/150?u=b2', role: 'Agency' },
+  {
+    id: 'b1',
+    name: 'Julian Cross',
+    avatar: 'https://i.pravatar.cc/150?u=b1',
+    role: 'Venue Manager',
+  },
+  {
+    id: 'b2',
+    name: 'Starlight Booking',
+    avatar: 'https://i.pravatar.cc/150?u=b2',
+    role: 'Agency',
+  },
 ];
-
 
 // --- BASE PROFILES FOR EACH ROLE ---
 
@@ -41,28 +64,40 @@ export const MOCK_ARTIST_PROFILE: ArtistProfile = {
   level: 2,
   password: 'password123', // Default mock password
   coverImage: 'https://picsum.photos/seed/gig1/1200/400',
-  bio: "Electronic synthesis meets classical composition. Based in Brooklyn, Luna Eclipse has been redefining the ambient techno scene since 2021.\n\nMy sets are an immersive journey through sound and light, perfect for intimate venues and large-scale festivals alike.",
+  bio: 'Electronic synthesis meets classical composition. Based in Brooklyn, Luna Eclipse has been redefining the ambient techno scene since 2021.\n\nMy sets are an immersive journey through sound and light, perfect for intimate venues and large-scale festivals alike.',
   location: 'Brooklyn, NY',
   genres: ['Techno', 'Ambient', 'Electronica'],
   verified: true,
   followers: mockFollowers,
   businessAssociates: mockBusinessAssociates,
   pressKit: {
-    photos: ['https://picsum.photos/seed/gig2/400/400', 'https://picsum.photos/seed/gig3/400/400'],
+    photos: [
+      'https://picsum.photos/seed/gig2/400/400',
+      'https://picsum.photos/seed/gig3/400/400',
+    ],
     topTracks: [
       { title: 'Midnight Protocol', duration: '5:42', plays: '124' },
-      { title: 'Neon Rain', duration: '4:15', plays: '98' }
+      { title: 'Neon Rain', duration: '4:15', plays: '98' },
     ],
     techRiderUrl: '#',
-    socials: [{ platform: 'Instagram', followers: '45' }, { platform: 'Twitter', followers: '12' }]
+    socials: [
+      { platform: 'Instagram', followers: '45' },
+      { platform: 'Twitter', followers: '12' },
+    ],
   },
-  stats: { gigsCompleted: 4, activeGigs: 1, rating: 4.9, responseTime: '< 2 hrs' },
+  stats: {
+    gigsCompleted: 4,
+    activeGigs: 1,
+    rating: 4.9,
+    responseTime: '< 2 hrs',
+  },
   equityOpportunities: [
     {
       id: 'eq-1',
       title: 'Project: "Neon Horizons" Album',
       type: 'Project Equity',
-      description: 'Invest in the production and marketing of the upcoming sophomore album.',
+      description:
+        'Invest in the production and marketing of the upcoming sophomore album.',
       totalValuation: 5000,
       currency: 'USD',
       equityAvailablePercentage: 20,
@@ -71,20 +106,36 @@ export const MOCK_ARTIST_PROFILE: ArtistProfile = {
       technology: 'ERC-20',
       termsSummary: 'Investors receive 20% of net royalties for 5 years.',
       riskLevel: 'Medium',
-      backersCount: 2
-    }
+      backersCount: 2,
+    },
   ],
-  subscription: { 
-    planName: 'Community Pro', 
-    status: 'Active', 
-    expiryDate: '2024-10-24', 
-    supportTier: 'Priority', 
+  subscription: {
+    planName: 'Community Pro',
+    status: 'Active',
+    expiryDate: '2024-10-24',
+    supportTier: 'Priority',
     autoRenew: true,
-    hasLeadGeniusSync: false
+    hasLeadGeniusSync: false,
   },
   savedPaymentMethods: {
-    crypto: [{ id: 'w1', network: 'Ethereum', address: '0x71C...9A23', label: 'Main Vault', isDefault: true }],
-    fiat: [{ id: 'c1', type: 'Card', last4: '4242', label: 'Chase Business', isDefault: true }]
+    crypto: [
+      {
+        id: 'w1',
+        network: 'Ethereum',
+        address: '0x71C...9A23',
+        label: 'Main Vault',
+        isDefault: true,
+      },
+    ],
+    fiat: [
+      {
+        id: 'c1',
+        type: 'Card',
+        last4: '4242',
+        label: 'Chase Business',
+        isDefault: true,
+      },
+    ],
   },
   revenue: {
     totalLifetime: 850,
@@ -94,52 +145,110 @@ export const MOCK_ARTIST_PROFILE: ArtistProfile = {
       gigs: 600,
       merch: 100,
       royalties: 50,
-      licensing: 100
+      licensing: 100,
     },
     recentPayouts: [
-      { date: '2023-09-15', amount: 200, method: 'Crypto (ETH)', status: 'Completed' },
-      { date: '2023-08-15', amount: 150, method: 'Bank Transfer', status: 'Completed' }
-    ]
+      {
+        date: '2023-09-15',
+        amount: 200,
+        method: 'Crypto (ETH)',
+        status: 'Completed',
+      },
+      {
+        date: '2023-08-15',
+        amount: 150,
+        method: 'Bank Transfer',
+        status: 'Completed',
+      },
+    ],
   },
-  leadQueries: []
+  leadQueries: [],
 };
 
 export const MOCK_DAO_GOVERNOR_PROFILE: ArtistProfile = {
-    ...MOCK_ARTIST_PROFILE,
-    id: 'u_dao_gov',
-    name: 'Governor Alice',
-    role: UserRole.DAO_GOVERNOR,
-    avatar: 'https://picsum.photos/seed/dao/200',
-    level: 15,
-    bio: 'Founding member of the KalaKrut DAO. Focused on sustainable growth and artist empowerment.',
-    stats: { ...MOCK_ARTIST_PROFILE.stats, rating: 5.0 },
+  ...MOCK_ARTIST_PROFILE,
+  id: 'u_dao_gov',
+  name: 'Governor Alice',
+  role: UserRole.DAO_GOVERNOR,
+  avatar: 'https://picsum.photos/seed/dao/200',
+  level: 15,
+  bio: 'Founding member of the KalaKrut DAO. Focused on sustainable growth and artist empowerment.',
+  stats: { ...MOCK_ARTIST_PROFILE.stats, rating: 5.0 },
 };
 
 export const MOCK_DAO_MEMBER_PROFILE: ArtistProfile = {
-    ...MOCK_ARTIST_PROFILE,
-    id: 'u_dao_member',
-    name: 'Leo Valdez',
-    role: UserRole.DAO_MEMBER,
-    avatar: 'https://picsum.photos/seed/daomember/200',
-    level: 8,
-    xp: 2500,
-    bio: 'Sound engineer and long-time community member. Recently accepted nomination to join the DAO.',
-    stats: { ...MOCK_ARTIST_PROFILE.stats, rating: 4.8 },
+  ...MOCK_ARTIST_PROFILE,
+  id: 'u_dao_member',
+  name: 'Leo Valdez',
+  role: UserRole.DAO_MEMBER,
+  avatar: 'https://picsum.photos/seed/daomember/200',
+  level: 8,
+  xp: 2500,
+  bio: 'Sound engineer and long-time community member. Recently accepted nomination to join the DAO.',
+  stats: { ...MOCK_ARTIST_PROFILE.stats, rating: 4.8 },
 };
-
 
 // Mock Users for Role Switcher
 export const MOCK_USERS_BY_ROLE: Record<UserRole, ArtistProfile> = {
   [UserRole.ARTIST]: MOCK_ARTIST_PROFILE,
-  [UserRole.VENUE]: { ...MOCK_ARTIST_PROFILE, id: 'u_venue', name: 'The Warehouse', role: UserRole.VENUE, avatar: 'https://picsum.photos/seed/venue1/200', location: 'London, UK' },
-  [UserRole.SPONSOR]: { ...MOCK_ARTIST_PROFILE, id: 'u_sponsor', name: 'RedBull Music', role: UserRole.SPONSOR, avatar: 'https://picsum.photos/seed/sponsor1/200', location: 'Global' },
-  [UserRole.REVELLER]: { ...MOCK_ARTIST_PROFILE, id: 'u_reveller', name: 'Alex Fan', role: UserRole.REVELLER, avatar: 'https://picsum.photos/seed/fan1/200', level: 2, xp: 150 },
-  [UserRole.ADMIN]: { ...MOCK_ARTIST_PROFILE, id: 'u_admin', name: 'System Admin', role: UserRole.ADMIN, avatar: 'https://picsum.photos/seed/admin/200', level: 99 },
-  [UserRole.SYSTEM_ADMIN_LIVE]: { ...MOCK_ARTIST_PROFILE, id: 'u_sys_admin_live', name: 'Kala Owner', role: UserRole.SYSTEM_ADMIN_LIVE, avatar: 'https://picsum.photos/seed/sysadmin/200', level: 100, password: 'live' },
-  [UserRole.ORGANIZER]: { ...MOCK_ARTIST_PROFILE, id: 'u_org', name: 'Festival Co.', role: UserRole.ORGANIZER, avatar: 'https://picsum.photos/seed/org/200' },
+  [UserRole.VENUE]: {
+    ...MOCK_ARTIST_PROFILE,
+    id: 'u_venue',
+    name: 'The Warehouse',
+    role: UserRole.VENUE,
+    avatar: 'https://picsum.photos/seed/venue1/200',
+    location: 'London, UK',
+  },
+  [UserRole.SPONSOR]: {
+    ...MOCK_ARTIST_PROFILE,
+    id: 'u_sponsor',
+    name: 'RedBull Music',
+    role: UserRole.SPONSOR,
+    avatar: 'https://picsum.photos/seed/sponsor1/200',
+    location: 'Global',
+  },
+  [UserRole.REVELLER]: {
+    ...MOCK_ARTIST_PROFILE,
+    id: 'u_reveller',
+    name: 'Alex Fan',
+    role: UserRole.REVELLER,
+    avatar: 'https://picsum.photos/seed/fan1/200',
+    level: 2,
+    xp: 150,
+  },
+  [UserRole.ADMIN]: {
+    ...MOCK_ARTIST_PROFILE,
+    id: 'u_admin',
+    name: 'System Admin',
+    role: UserRole.ADMIN,
+    avatar: 'https://picsum.photos/seed/admin/200',
+    level: 99,
+  },
+  [UserRole.SYSTEM_ADMIN_LIVE]: {
+    ...MOCK_ARTIST_PROFILE,
+    id: 'u_sys_admin_live',
+    name: 'Kala Owner',
+    role: UserRole.SYSTEM_ADMIN_LIVE,
+    avatar: 'https://picsum.photos/seed/sysadmin/200',
+    level: 100,
+    password: 'live',
+  },
+  [UserRole.ORGANIZER]: {
+    ...MOCK_ARTIST_PROFILE,
+    id: 'u_org',
+    name: 'Festival Co.',
+    role: UserRole.ORGANIZER,
+    avatar: 'https://picsum.photos/seed/org/200',
+  },
   [UserRole.DAO_GOVERNOR]: MOCK_DAO_GOVERNOR_PROFILE,
   [UserRole.DAO_MEMBER]: MOCK_DAO_MEMBER_PROFILE,
-  [UserRole.SERVICE_PROVIDER]: { ...MOCK_ARTIST_PROFILE, id: 'u_service', name: 'Legal Eagle', role: UserRole.SERVICE_PROVIDER, avatar: 'https://picsum.photos/seed/legal/200' }
+  [UserRole.SERVICE_PROVIDER]: {
+    ...MOCK_ARTIST_PROFILE,
+    id: 'u_service',
+    name: 'Legal Eagle',
+    role: UserRole.SERVICE_PROVIDER,
+    avatar: 'https://picsum.photos/seed/legal/200',
+  },
 };
 
 export const MOCK_ROSTER: RosterMember[] = [
@@ -150,10 +259,24 @@ export const MOCK_ROSTER: RosterMember[] = [
     avatar: 'https://picsum.photos/seed/u1/200',
     location: 'Brooklyn, NY',
     verified: true,
-    assets: { ips: ['2'], events: ['1'], services: ['2'], products: ['5'], nfts: ['3'], contents: [], equipment: [], instruments: [], tickets: [] },
+    assets: {
+      ips: ['2'],
+      events: ['1'],
+      services: ['2'],
+      products: ['5'],
+      nfts: ['3'],
+      contents: [],
+      equipment: [],
+      instruments: [],
+      tickets: [],
+    },
     rating: 4.9,
-    subscriberOnly: { email: 'booking@lunaeclipse.com', phone: '+1 555 019 2834', agentContact: 'Creative Artists Agency' },
-    walletAddress: '0xAbc...123'
+    subscriberOnly: {
+      email: 'booking@lunaeclipse.com',
+      phone: '+1 555 019 2834',
+      agentContact: 'Creative Artists Agency',
+    },
+    walletAddress: '0xAbc...123',
   },
   {
     id: 'r2',
@@ -162,10 +285,24 @@ export const MOCK_ROSTER: RosterMember[] = [
     avatar: 'https://picsum.photos/seed/venue1/200',
     location: 'London, UK',
     verified: true,
-    assets: { ips: ['0'], events: ['1'], services: ['2'], products: ['0'], nfts: ['10'], contents: [], equipment: [], instruments: [], tickets: [] },
+    assets: {
+      ips: ['0'],
+      events: ['1'],
+      services: ['2'],
+      products: ['0'],
+      nfts: ['10'],
+      contents: [],
+      equipment: [],
+      instruments: [],
+      tickets: [],
+    },
     rating: 4.8,
-    subscriberOnly: { email: 'events@thewarehouse.ldn', phone: '+44 20 7946 0123', agentContact: 'Internal Booking Team' },
-    walletAddress: '0xDef...456'
+    subscriberOnly: {
+      email: 'events@thewarehouse.ldn',
+      phone: '+44 20 7946 0123',
+      agentContact: 'Internal Booking Team',
+    },
+    walletAddress: '0xDef...456',
   },
   {
     id: 'r3',
@@ -174,10 +311,24 @@ export const MOCK_ROSTER: RosterMember[] = [
     avatar: 'https://picsum.photos/seed/sponsor1/200',
     location: 'San Francisco, CA',
     verified: true,
-    assets: { ips: ['0'], events: ['0'], services: ['2'], products: ['0'], nfts: ['0'], contents: [], equipment: [], instruments: [], tickets: [] },
+    assets: {
+      ips: ['0'],
+      events: ['0'],
+      services: ['2'],
+      products: ['0'],
+      nfts: ['0'],
+      contents: [],
+      equipment: [],
+      instruments: [],
+      tickets: [],
+    },
     rating: 5.0,
-    subscriberOnly: { email: 'partnerships@techstart.io', phone: '+1 415 555 0100', agentContact: 'Global Brand Director' },
-    walletAddress: '0xGhi...789'
+    subscriberOnly: {
+      email: 'partnerships@techstart.io',
+      phone: '+1 415 555 0100',
+      agentContact: 'Global Brand Director',
+    },
+    walletAddress: '0xGhi...789',
   },
   {
     id: 'u_dao_gov',
@@ -186,10 +337,24 @@ export const MOCK_ROSTER: RosterMember[] = [
     avatar: 'https://picsum.photos/seed/dao/200',
     location: 'Decentralized',
     verified: true,
-    assets: { ips: ['0'], events: ['0'], services: ['2'], products: ['0'], nfts: ['0'], contents: [], equipment: [], instruments: [], tickets: [] },
+    assets: {
+      ips: ['0'],
+      events: ['0'],
+      services: ['2'],
+      products: ['0'],
+      nfts: ['0'],
+      contents: [],
+      equipment: [],
+      instruments: [],
+      tickets: [],
+    },
     rating: 5.0,
-    subscriberOnly: { email: 'governor.alice@kalakrut.io', phone: '', agentContact: '' },
-    walletAddress: '0xJkl...012'
+    subscriberOnly: {
+      email: 'governor.alice@kalakrut.io',
+      phone: '',
+      agentContact: '',
+    },
+    walletAddress: '0xJkl...012',
   },
   {
     id: 'r4',
@@ -198,10 +363,24 @@ export const MOCK_ROSTER: RosterMember[] = [
     avatar: 'https://picsum.photos/seed/u4/200',
     location: 'Berlin, DE',
     verified: false,
-    assets: { ips: ['1'], events: ['2'], services: ['0'], products: ['1'], nfts: ['5'], contents: [], equipment: [], instruments: [], tickets: [] },
+    assets: {
+      ips: ['1'],
+      events: ['2'],
+      services: ['0'],
+      products: ['1'],
+      nfts: ['5'],
+      contents: [],
+      equipment: [],
+      instruments: [],
+      tickets: [],
+    },
     rating: 4.7,
-    subscriberOnly: { email: 'contact@djquantum.com', phone: '+49 176 12345678', agentContact: 'Self-managed' },
-    walletAddress: '0xMno...345'
+    subscriberOnly: {
+      email: 'contact@djquantum.com',
+      phone: '+49 176 12345678',
+      agentContact: 'Self-managed',
+    },
+    walletAddress: '0xMno...345',
   },
   {
     id: 'u_dao_member',
@@ -210,10 +389,20 @@ export const MOCK_ROSTER: RosterMember[] = [
     avatar: 'https://picsum.photos/seed/daomember/200',
     location: 'Mexico City, MX',
     verified: true,
-    assets: { ips: ['0'], events: ['0'], services: ['1'], products: ['0'], nfts: ['2'], contents: [], equipment: [], instruments: [], tickets: [] },
+    assets: {
+      ips: ['0'],
+      events: ['0'],
+      services: ['1'],
+      products: ['0'],
+      nfts: ['2'],
+      contents: [],
+      equipment: [],
+      instruments: [],
+      tickets: [],
+    },
     rating: 4.8,
     subscriberOnly: { email: 'leo.v@email.com', phone: '', agentContact: '' },
-    walletAddress: '0xPqr...678'
+    walletAddress: '0xPqr...678',
   },
   {
     id: 'u_sponsor_2',
@@ -222,10 +411,24 @@ export const MOCK_ROSTER: RosterMember[] = [
     avatar: 'https://picsum.photos/seed/sponsor2/200',
     location: 'Global',
     verified: true,
-    assets: { ips: ['1'], events: ['5'], services: ['1'], products: ['0'], nfts: ['0'], contents: [], equipment: [], instruments: [], tickets: [] },
+    assets: {
+      ips: ['1'],
+      events: ['5'],
+      services: ['1'],
+      products: ['0'],
+      nfts: ['0'],
+      contents: [],
+      equipment: [],
+      instruments: [],
+      tickets: [],
+    },
     rating: 4.9,
-    subscriberOnly: { email: 'music@redbull.com', phone: '', agentContact: 'Artist Relations' },
-    walletAddress: '0xStu...901'
+    subscriberOnly: {
+      email: 'music@redbull.com',
+      phone: '',
+      agentContact: 'Artist Relations',
+    },
+    walletAddress: '0xStu...901',
   },
   {
     id: 'u_reveller',
@@ -234,10 +437,20 @@ export const MOCK_ROSTER: RosterMember[] = [
     avatar: 'https://picsum.photos/seed/fan1/200',
     location: 'Paris, FR',
     verified: false,
-    assets: { ips: ['0'], events: ['0'], services: ['0'], products: ['0'], nfts: ['8'], contents: [], equipment: [], instruments: [], tickets: [] },
+    assets: {
+      ips: ['0'],
+      events: ['0'],
+      services: ['0'],
+      products: ['0'],
+      nfts: ['8'],
+      contents: [],
+      equipment: [],
+      instruments: [],
+      tickets: [],
+    },
     rating: 4.5,
     subscriberOnly: { email: '', phone: '', agentContact: '' },
-    walletAddress: '0xVwx...234'
+    walletAddress: '0xVwx...234',
   },
   {
     id: 'u_org',
@@ -246,10 +459,24 @@ export const MOCK_ROSTER: RosterMember[] = [
     avatar: 'https://picsum.photos/seed/org/200',
     location: 'Amsterdam, NL',
     verified: true,
-    assets: { ips: ['0'], events: ['3'], services: ['2'], products: ['0'], nfts: ['1'], contents: [], equipment: [], instruments: [], tickets: [] },
+    assets: {
+      ips: ['0'],
+      events: ['3'],
+      services: ['2'],
+      products: ['0'],
+      nfts: ['1'],
+      contents: [],
+      equipment: [],
+      instruments: [],
+      tickets: [],
+    },
     rating: 4.6,
-    subscriberOnly: { email: 'contact@festivalco.com', phone: '', agentContact: 'Booking Department' },
-    walletAddress: '0xYza...567'
+    subscriberOnly: {
+      email: 'contact@festivalco.com',
+      phone: '',
+      agentContact: 'Booking Department',
+    },
+    walletAddress: '0xYza...567',
   },
   {
     id: 'u_service',
@@ -258,24 +485,69 @@ export const MOCK_ROSTER: RosterMember[] = [
     avatar: 'https://picsum.photos/seed/legal/200',
     location: 'New York, NY',
     verified: true,
-    assets: { ips: ['1'], events: ['0'], services: ['3'], products: ['0'], nfts: ['0'], contents: [], equipment: [], instruments: [], tickets: [] },
+    assets: {
+      ips: ['1'],
+      events: ['0'],
+      services: ['3'],
+      products: ['0'],
+      nfts: ['0'],
+      contents: [],
+      equipment: [],
+      instruments: [],
+      tickets: [],
+    },
     rating: 5.0,
-    subscriberOnly: { email: 'consult@legaleagle.com', phone: '', agentContact: '' },
-    walletAddress: '0xBcd...890'
-  }
+    subscriberOnly: {
+      email: 'consult@legaleagle.com',
+      phone: '',
+      agentContact: '',
+    },
+    walletAddress: '0xBcd...890',
+  },
 ];
 
 export const MOCK_LEADERBOARD: LeaderboardEntry[] = [
-  { rank: 1, user: { ...MOCK_USERS_BY_ROLE[UserRole.ARTIST], name: 'Luna Eclipse', xp: 450, level: 2 }, badges: ['Early Adopter'], change: 0 },
-  { rank: 2, user: { ...MOCK_USERS_BY_ROLE[UserRole.VENUE], name: 'The Warehouse', xp: 320, level: 1 }, badges: ['Super Host'], change: 0 },
-  { rank: 3, user: { ...MOCK_USERS_BY_ROLE[UserRole.REVELLER], name: 'CryptoFan_99', xp: 150, level: 1 }, badges: ['Collector'], change: 0 },
+  {
+    rank: 1,
+    user: {
+      ...MOCK_USERS_BY_ROLE[UserRole.ARTIST],
+      name: 'Luna Eclipse',
+      xp: 450,
+      level: 2,
+    },
+    badges: ['Early Adopter'],
+    change: 0,
+  },
+  {
+    rank: 2,
+    user: {
+      ...MOCK_USERS_BY_ROLE[UserRole.VENUE],
+      name: 'The Warehouse',
+      xp: 320,
+      level: 1,
+    },
+    badges: ['Super Host'],
+    change: 0,
+  },
+  {
+    rank: 3,
+    user: {
+      ...MOCK_USERS_BY_ROLE[UserRole.REVELLER],
+      name: 'CryptoFan_99',
+      xp: 150,
+      level: 1,
+    },
+    badges: ['Collector'],
+    change: 0,
+  },
 ];
 
 export const MOCK_PROPOSALS: Proposal[] = [
   {
     id: 'PROP-101',
     title: 'Initialize Treasury',
-    description: 'Proposal to seed the community treasury with initial grant funding.',
+    description:
+      'Proposal to seed the community treasury with initial grant funding.',
     votesFor: 3,
     votesAgainst: 0,
     deadline: '2023-10-20',
@@ -283,8 +555,8 @@ export const MOCK_PROPOSALS: Proposal[] = [
     creator: 'Governor Alice',
     quorumRequired: 20,
     currentParticipation: 100, // 3/3 users voted
-    isCritical: true
-  }
+    isCritical: true,
+  },
 ];
 
 export const MOCK_MARKETPLACE_ITEMS: MarketplaceItem[] = [
@@ -295,10 +567,15 @@ export const MOCK_MARKETPLACE_ITEMS: MarketplaceItem[] = [
     price: 1200,
     currency: 'USD',
     image: 'https://picsum.photos/seed/guitar/400/400',
-    seller: { name: 'Neon Pulse', avatar: 'https://picsum.photos/seed/u2/50', verified: true },
+    seller: {
+      name: 'Neon Pulse',
+      avatar: 'https://picsum.photos/seed/u2/50',
+      verified: true,
+    },
     isAuction: false,
-    description: 'Custom painted Cyberpunk 2077 themed electric guitar. Modified pickups for extra crunch. Used on stage during the "Neon Nights" tour.',
-    condition: 'Like New'
+    description:
+      'Custom painted Cyberpunk 2077 themed electric guitar. Modified pickups for extra crunch. Used on stage during the "Neon Nights" tour.',
+    condition: 'Like New',
   },
   {
     id: 'm2',
@@ -307,12 +584,17 @@ export const MOCK_MARKETPLACE_ITEMS: MarketplaceItem[] = [
     price: 0.5,
     currency: 'ETH',
     image: 'https://picsum.photos/seed/nft1/400/400',
-    seller: { name: 'The Warehouse', avatar: 'https://picsum.photos/seed/venue1/50', verified: true },
+    seller: {
+      name: 'The Warehouse',
+      avatar: 'https://picsum.photos/seed/venue1/50',
+      verified: true,
+    },
     isAuction: true,
     endTime: '2d 14h',
-    description: 'Granting lifetime backstage access to all events at The Warehouse London. Includes VIP bar access and meet & greet privileges. Tradable on secondary market.',
-    condition: 'Digital'
-  }
+    description:
+      'Granting lifetime backstage access to all events at The Warehouse London. Includes VIP bar access and meet & greet privileges. Tradable on secondary market.',
+    condition: 'Digital',
+  },
 ];
 
 export const MOCK_THREADS: ForumThread[] = [
@@ -325,21 +607,22 @@ export const MOCK_THREADS: ForumThread[] = [
     replies: 2,
     views: 12,
     lastActive: '1h ago',
-    isPinned: true
-  }
+    isPinned: true,
+  },
 ];
 
 export const MOCK_ARTICLES: Article[] = [
   {
     id: '1',
     title: 'KalaKrut Launches Beta',
-    excerpt: 'Welcome to the future of creative collaboration. We are live with our first cohort of artists.',
+    excerpt:
+      'Welcome to the future of creative collaboration. We are live with our first cohort of artists.',
     content: 'Full article content here...',
     date: 'Oct 12, 2023',
     author: 'KalaKrut Team',
     image: 'https://picsum.photos/seed/news1/800/400',
-    category: 'Announcement'
-  }
+    category: 'Announcement',
+  },
 ];
 
 export const MOCK_SERVICES: ServiceListing[] = [
@@ -351,14 +634,35 @@ export const MOCK_SERVICES: ServiceListing[] = [
     rate: '150',
     rating: 5.0,
     reviews: 1,
-    isPlatformService: false
-  }
+    isPlatformService: false,
+  },
 ];
 
 export const MOCK_TREASURY_ASSETS: TreasuryAsset[] = [
-  { symbol: 'ETH', name: 'Ethereum', balance: 2.5, valueUsd: 4500, allocation: 25, trend: 'neutral' },
-  { symbol: 'USDC', name: 'USD Coin', balance: 10000, valueUsd: 10000, allocation: 55, trend: 'neutral' },
-  { symbol: 'KALA', name: 'Kala Token', balance: 50000, valueUsd: 2500, allocation: 20, trend: 'up' }
+  {
+    symbol: 'ETH',
+    name: 'Ethereum',
+    balance: 2.5,
+    valueUsd: 4500,
+    allocation: 25,
+    trend: 'neutral',
+  },
+  {
+    symbol: 'USDC',
+    name: 'USD Coin',
+    balance: 10000,
+    valueUsd: 10000,
+    allocation: 55,
+    trend: 'neutral',
+  },
+  {
+    symbol: 'KALA',
+    name: 'Kala Token',
+    balance: 50000,
+    valueUsd: 2500,
+    allocation: 20,
+    trend: 'up',
+  },
 ];
 
 export const MOCK_STAFF: StaffMember[] = [
@@ -383,23 +687,23 @@ export const MOCK_STAFF: StaffMember[] = [
     leavesAccrued: 2,
     leavesUsed: 0,
     duties: ['Manage Discord', 'Onboard initial users'],
-    monthlyTasks: ['Welcome new users', 'Gather feedback']
-  }
+    monthlyTasks: ['Welcome new users', 'Gather feedback'],
+  },
 ];
 
 export const MOCK_MODERATION_CASES: ModerationCase[] = [];
 
 export const MOCK_TICKETS: SupportTicket[] = [
   {
-     id: 'TK-1001',
-     userId: 'u_artist',
-     userName: 'Luna Eclipse',
-     subject: 'Profile Verification',
-     category: 'Account',
-     priority: 'Low',
-     status: 'Open',
-     tier: 'Tier 1',
-     createdAt: '2023-10-14 09:00',
-     lastUpdate: '2h ago'
-  }
+    id: 'TK-1001',
+    userId: 'u_artist',
+    userName: 'Luna Eclipse',
+    subject: 'Profile Verification',
+    category: 'Account',
+    priority: 'Low',
+    status: 'Open',
+    tier: 'Tier 1',
+    createdAt: '2023-10-14 09:00',
+    lastUpdate: '2h ago',
+  },
 ];

@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { RosterMember } from '../types'; // Assuming RosterMember is the type for a user/artist
 
@@ -11,7 +10,9 @@ interface ChatContextType {
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
-export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const ChatProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [recipient, setRecipient] = useState<RosterMember | null>(null);
 
@@ -26,7 +27,9 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   return (
-    <ChatContext.Provider value={{ isChatOpen, recipient, openChat, closeChat }}>
+    <ChatContext.Provider
+      value={{ isChatOpen, recipient, openChat, closeChat }}
+    >
       {children}
     </ChatContext.Provider>
   );

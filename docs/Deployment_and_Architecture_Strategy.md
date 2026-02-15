@@ -9,14 +9,16 @@ The immediate and critical priority is to **migrate the backend from a developme
 ## 2. Initial State Analysis & Core Problem
 
 ### Objective
+
 The primary goal is to deploy the full-stack application (React frontend, Express backend) to a production environment on Firebase and Google Cloud Run, allowing users to register and interact with the platform reliably.
 
 ### Problem Statement
+
 Our investigation of the codebase revealed a critical architectural flaw:
 
-*   **Ephemeral Database:** The Express backend is currently configured to use `sqlite3` to interact with a local database file (`dev.db`).
-*   **Stateless Production Environment:** The target deployment environment, Cloud Run, is stateless. Its instances have ephemeral filesystems, meaning any local file—including the `dev.db` database—is permanently deleted whenever the server instance restarts.
-*   **Consequence:** Any user data created (registrations, profiles, etc.) will be lost, making the application non-functional in a production setting. We confirmed via `curl` tests that while the APIs function locally, they are entirely dependent on this temporary database file.
+- **Ephemeral Database:** The Express backend is currently configured to use `sqlite3` to interact with a local database file (`dev.db`).
+- **Stateless Production Environment:** The target deployment environment, Cloud Run, is stateless. Its instances have ephemeral filesystems, meaning any local file—including the `dev.db` database—is permanently deleted whenever the server instance restarts.
+- **Consequence:** Any user data created (registrations, profiles, etc.) will be lost, making the application non-functional in a production setting. We confirmed via `curl` tests that while the APIs function locally, they are entirely dependent on this temporary database file.
 
 Although a `prisma/schema.prisma` file exists, the server code is **not currently using it**, relying instead on direct `sqlite3` library calls.
 
@@ -37,23 +39,26 @@ To prepare the application for a successful production deployment, we must refac
 Once the core application is stabilized, we can implement the advanced features discussed. The recommended approach is **Polyglot Persistence**, using the best database technology for each specific task.
 
 ### A. System of Record: MySQL/PostgreSQL
-*   **Role:** The primary transactional database for the application. It will store all core, structured data such as users, artist profiles, proposals, and marketplace items.
-*   **Implementation:** This is the database that Prisma will connect to as outlined in the immediate action plan above.
+
+- **Role:** The primary transactional database for the application. It will store all core, structured data such as users, artist profiles, proposals, and marketplace items.
+- **Implementation:** This is the database that Prisma will connect to as outlined in the immediate action plan above.
 
 ### B. Graph Analytics & Features: Neo4j
-*   **Role:** A secondary, specialized database for analyzing complex relationships and powering user-facing features.
-*   **Use Cases:**
-    *   **Internal BI:** Discovering non-obvious connections between artists, investors, and opportunities.
-    *   **Portal Features:** Building recommendation engines ("You might also know..."), visualizing community networks, and providing advanced user insights.
-*   **Implementation:** Data will be synchronized from the primary SQL database into Neo4j via an ETL (Extract, Transform, Load) pipeline. The application will query Neo4j directly for graph-specific features.
+
+- **Role:** A secondary, specialized database for analyzing complex relationships and powering user-facing features.
+- **Use Cases:**
+  - **Internal BI:** Discovering non-obvious connections between artists, investors, and opportunities.
+  - **Portal Features:** Building recommendation engines ("You might also know..."), visualizing community networks, and providing advanced user insights.
+- **Implementation:** Data will be synchronized from the primary SQL database into Neo4j via an ETL (Extract, Transform, Load) pipeline. The application will query Neo4j directly for graph-specific features.
 
 ### C. Web3 Transaction Handling
-*   **Challenge:** It is inefficient to query the blockchain directly for application data like transaction histories.
-*   **Solution: The Indexer Pattern**
-    1.  **Blockchain as Source of Truth:** The blockchain remains the ultimate, immutable ledger.
-    2.  **Indexer Service:** A dedicated microservice will listen for relevant events from your smart contracts.
-    3.  **Sync to SQL Database:** When the indexer detects a transaction, it will process it and save a structured copy into a dedicated table (e.g., `web3_transactions`) in the primary MySQL/PostgreSQL database.
-*   **Data Flow:** The complete data flow will be: `Blockchain -> Indexer Service -> Primary SQL Database -> Neo4j Graph`. This creates a high-performance, scalable system for your dApp.
+
+- **Challenge:** It is inefficient to query the blockchain directly for application data like transaction histories.
+- **Solution: The Indexer Pattern**
+  1.  **Blockchain as Source of Truth:** The blockchain remains the ultimate, immutable ledger.
+  2.  **Indexer Service:** A dedicated microservice will listen for relevant events from your smart contracts.
+  3.  **Sync to SQL Database:** When the indexer detects a transaction, it will process it and save a structured copy into a dedicated table (e.g., `web3_transactions`) in the primary MySQL/PostgreSQL database.
+- **Data Flow:** The complete data flow will be: `Blockchain -> Indexer Service -> Primary SQL Database -> Neo4j Graph`. This creates a high-performance, scalable system for your dApp.
 
 ## 5. Conclusion
 

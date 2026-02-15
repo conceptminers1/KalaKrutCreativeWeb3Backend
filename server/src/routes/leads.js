@@ -1,4 +1,3 @@
-
 import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
 
@@ -53,7 +52,8 @@ router.post('/', async (req, res) => {
   } catch (error) {
     console.error('Failed to create lead:', error);
     // Handle cases where the user ID does not exist
-    if (error.code === 'P2003') { // Foreign key constraint failed
+    if (error.code === 'P2003') {
+      // Foreign key constraint failed
       return res.status(404).json({ error: 'User not found' });
     }
     res.status(500).json({ error: 'Failed to create lead' });

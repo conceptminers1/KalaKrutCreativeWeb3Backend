@@ -3,9 +3,11 @@
 ### Interaction 1: `ArtistProfile.tsx` Update Strategy
 
 **USER:**
+
 > There are only 374 lines in this file. You have to suggest me how to go about this update. Because you are not able to give or update big files
 
 **AI ASSISTANT:**
+
 > You are absolutely right, and I sincerely apologize. It's clear that my context window or output processing is truncating large files, making my previous attempts to help you both frustrating and completely ineffective. My inability to handle this large file is a significant failure. Thank you for your patience.
 >
 > Let's try a different, more reliable approach.
@@ -20,11 +22,11 @@
 >
 > **REPLACE THIS:**
 > '''tsx
-> import { 
->   MapPin, 
->   CheckCircle, 
->   // ... (many other imports)
->   Trash
+> import {
+> MapPin,
+> CheckCircle,
+> // ... (many other imports)
+> Trash
 > } from 'lucide-react';
 > import UserGuide from '../components/UserGuide';
 > import { useToast } from '../contexts/ToastContext';
@@ -32,13 +34,13 @@
 >
 > **WITH THIS:**
 > '''tsx
-> import { 
->   MapPin, 
->   CheckCircle, 
->   // ... (many other imports)
->   Trash,
->   ThumbsUp,
->   BrainCircuit
+> import {
+> MapPin,
+> CheckCircle,
+> // ... (many other imports)
+> Trash,
+> ThumbsUp,
+> BrainCircuit
 > } from 'lucide-react';
 > import UserGuide from '../components/UserGuide';
 > import { useToast } from '../contexts/ToastContext';
@@ -52,34 +54,34 @@
 > **ADD THIS CODE...**
 > '''tsx
 > interface MusicBrainzResult {
->   id: string;
->   name: string;
->   country: string;
+> id: string;
+> name: string;
+> country: string;
 > }
 > '''
 > **...RIGHT AFTER THIS:**
 > '''tsx
 > interface ArtistProfileProps {
->   artist: IArtistProfile;
->   onChat: () => void;
->   onBook: () => void;
->   isOwnProfile?: boolean;
->   isBlocked?: boolean; 
->   onUpdateProfile?: (data: Partial<IArtistProfile>) => void;
+> artist: IArtistProfile;
+> onChat: () => void;
+> onBook: () => void;
+> isOwnProfile?: boolean;
+> isBlocked?: boolean;
+> onUpdateProfile?: (data: Partial<IArtistProfile>) => void;
 > }
 > '''
 >
 > **Then, ADD THIS CODE...**
 > '''tsx
->   // MusicBrainz Search State
->   const [mbSearchQuery, setMbSearchQuery] = useState('');
->   const [mbResults, setMbResults] = useState<MusicBrainzResult[]>([]);
->   const [isSearchingMb, setIsSearchingMb] = useState(false);
+> // MusicBrainz Search State
+> const [mbSearchQuery, setMbSearchQuery] = useState('');
+> const [mbResults, setMbResults] = useState<MusicBrainzResult[]>([]);
+> const [isSearchingMb, setIsSearchingMb] = useState(false);
 > '''
 > **...RIGHT AFTER THIS:**
 > '''tsx
->   const [manualQuery, setManualQuery] = useState('');
->   const [manualResponse, setManualResponse] = useState('');
+> const [manualQuery, setManualQuery] = useState('');
+> const [manualResponse, setManualResponse] = useState('');
 > '''
 >
 > ### Step 3: Add New Handler Functions
@@ -88,43 +90,43 @@
 >
 > **ADD THIS CODE...**
 > '''tsx
->   const handleSearchMusicBrainz = async () => {
->     if (!mbSearchQuery.trim()) return;
->     setIsSearchingMb(true);
->     try {
->       const results = await searchMusicBrainz(mbSearchQuery);
->       setMbResults(results.map(r => ({ id: r.id, name: r.name, country: r.country || 'N/A' })));
->       notify(`Found ${results.length} potential matches on MusicBrainz.`, 'info');
->     } catch (error) {
->       notify('Failed to search MusicBrainz. Please try again later.', 'error');
->     }
->     setIsSearchingMb(false);
->   };
-> 
->   const handleLinkProfile = (mbId: string) => {
->     const updatedArtist = { ...localArtist, musicBrainzId: mbId, verified: true };
->     setLocalArtist(updatedArtist);
->     if (onUpdateProfile) onUpdateProfile({ musicBrainzId: mbId, verified: true });
->     notify('Profile successfully linked with MusicBrainz! You are now verified.', 'success');
->     setMbResults([]);
->     setMbSearchQuery('');
->   };
-> 
->   const handleAcknowledgeLead = (leadId: string) => {
->     const updatedLeadQueries = localArtist.leadQueries?.map(lead => 
->       lead.id === leadId ? { ...lead, status: 'Acknowledged' } : lead
->     );
->     const updatedArtist = { ...localArtist, leadQueries: updatedLeadQueries };
->     setLocalArtist(updatedArtist);
->     if(onUpdateProfile) onUpdateProfile({ leadQueries: updatedArtist.leadQueries });
->     notify("Lead acknowledged. Admins have been notified of your interest.", "success");
->   };
+> const handleSearchMusicBrainz = async () => {
+> if (!mbSearchQuery.trim()) return;
+> setIsSearchingMb(true);
+> try {
+> const results = await searchMusicBrainz(mbSearchQuery);
+> setMbResults(results.map(r => ({ id: r.id, name: r.name, country: r.country || 'N/A' })));
+> notify(`Found ${results.length} potential matches on MusicBrainz.`, 'info');
+> } catch (error) {
+> notify('Failed to search MusicBrainz. Please try again later.', 'error');
+> }
+> setIsSearchingMb(false);
+> };
+>
+> const handleLinkProfile = (mbId: string) => {
+> const updatedArtist = { ...localArtist, musicBrainzId: mbId, verified: true };
+> setLocalArtist(updatedArtist);
+> if (onUpdateProfile) onUpdateProfile({ musicBrainzId: mbId, verified: true });
+> notify('Profile successfully linked with MusicBrainz! You are now verified.', 'success');
+> setMbResults([]);
+> setMbSearchQuery('');
+> };
+>
+> const handleAcknowledgeLead = (leadId: string) => {
+> const updatedLeadQueries = localArtist.leadQueries?.map(lead =>
+> lead.id === leadId ? { ...lead, status: 'Acknowledged' } : lead
+> );
+> const updatedArtist = { ...localArtist, leadQueries: updatedLeadQueries };
+> setLocalArtist(updatedArtist);
+> if(onUpdateProfile) onUpdateProfile({ leadQueries: updatedArtist.leadQueries });
+> notify("Lead acknowledged. Admins have been notified of your interest.", "success");
+> };
 > '''
 > **...RIGHT AFTER THIS:**
 > '''tsx
->   const handleManualLeadSubmit = () => {
->     // ... function content
->   };
+> const handleManualLeadSubmit = () => {
+> // ... function content
+> };
 > '''
 >
 > ### Step 4: Update `handleManualLeadSubmit`
@@ -133,9 +135,9 @@
 >
 > **REPLACE THIS:**
 > '''tsx
->   const handleManualLeadSubmit = () => {
->     if(!manualQuery || !manualResponse) return;
-> 
+> const handleManualLeadSubmit = () => {
+> if(!manualQuery || !manualResponse) return;
+>
 >     const newLead: LeadQuery = {
 >        id: `lq-${Date.now()}`,
 >        date: new Date().toLocaleDateString(),
@@ -144,22 +146,23 @@
 >        method: 'Manual Entry',
 >        isPaidService: false
 >     };
-> 
+>
 >     setLocalArtist(prev => ({
 >        ...prev,
 >        leadQueries: [newLead, ...(prev.leadQueries || [])]
 >     }));
-> 
+>
 >     setManualQuery('');
 >     setManualResponse('');
 >     notify("Lead query saved successfully!", "success");
->   };
+>
+> };
 > '''
 > **WITH THIS:**
 > '''tsx
->   const handleManualLeadSubmit = () => {
->     if(!manualQuery || !manualResponse) return;
-> 
+> const handleManualLeadSubmit = () => {
+> if(!manualQuery || !manualResponse) return;
+>
 >     const newLead: LeadQuery = {
 >        id: `lq-${Date.now()}`,
 >        date: new Date().toLocaleDateString(),
@@ -169,15 +172,16 @@
 >        isPaidService: false,
 >        status: 'New'
 >     };
-> 
+>
 >     const updatedArtist = { ...localArtist, leadQueries: [newLead, ...(localArtist.leadQueries || [])] };
 >     setLocalArtist(updatedArtist);
 >     if(onUpdateProfile) onUpdateProfile({ leadQueries: updatedArtist.leadQueries });
-> 
+>
 >     setManualQuery('');
 >     setManualResponse('');
 >     notify("Lead query saved successfully!", "success");
->   };
+>
+> };
 > '''
 >
 > ### Step 5: Replace the "Lead Queries" Tab JSX
@@ -186,17 +190,17 @@
 >
 > **REPLACE THIS ENTIRE BLOCK...**
 > '''tsx
->       ) : activeTab === 'leads' && isOwnProfile ? (
->          <div className="space-y-6 animate-in slide-in-from-right-4 fade-in">
->             {/* ... all the old content for the leads tab ... */}
->          </div>
+> ) : activeTab === 'leads' && isOwnProfile ? (
+> <div className="space-y-6 animate-in slide-in-from-right-4 fade-in">
+> {/_ ... all the old content for the leads tab ... _/}
+> </div>
 > '''
 > **...WITH THIS NEW BLOCK:**
 > '''tsx
->       ) : activeTab === 'leads' && isOwnProfile ? (
->          <div className="space-y-6 animate-in slide-in-from-right-4 fade-in">
->             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-> 
+> ) : activeTab === 'leads' && isOwnProfile ? (
+> <div className="space-y-6 animate-in slide-in-from-right-4 fade-in">
+> <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+>
 >               <div className={`bg-kala-800/50 border border-kala-700 rounded-xl p-6 ${localArtist.musicBrainzId ? 'border-green-500/30' : ''}`}>
 >                   <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
 >                     <BrainCircuit className={localArtist.musicBrainzId ? "text-green-400" : "text-kala-secondary"} /> Knowledge Graph Sync
@@ -211,9 +215,9 @@
 >                     <>
 >                       <p className="text-sm text-kala-400 mb-4">Link your profile to the MusicBrainz knowledge graph to verify your identity and enrich your data.</p>
 >                       <div className="flex gap-2">
->                         <input 
->                           type="text" 
->                           placeholder="Enter your artist name to search..." 
+>                         <input
+>                           type="text"
+>                           placeholder="Enter your artist name to search..."
 >                           value={mbSearchQuery}
 >                           onChange={(e) => setMbSearchQuery(e.target.value)}
 >                           className="flex-grow w-full bg-kala-900 border border-kala-700 rounded-lg px-4 py-2 text-white text-sm outline-none focus:border-kala-secondary"
@@ -225,27 +229,27 @@
 >                     </>
 >                   )}
 >               </div>
-> 
+>
 >               <div className="bg-kala-800/30 border border-kala-700 rounded-xl p-6">
 >                  <h4 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
 >                     <FileText className="w-4 h-4 text-kala-secondary" /> Record New Query (Manual)
 >                  </h4>
 >                  <div className="space-y-3">
->                     <input 
->                        type="text" 
->                        placeholder="Query used (e.g. 'Techno venues in London')" 
+>                     <input
+>                        type="text"
+>                        placeholder="Query used (e.g. 'Techno venues in London')"
 >                        value={manualQuery}
 >                        onChange={(e) => setManualQuery(e.target.value)}
 >                        className="w-full bg-kala-900 border border-kala-700 rounded-lg px-4 py-2 text-white text-sm outline-none focus:border-kala-secondary"
 >                     />
->                     <textarea 
+>                     <textarea
 >                        rows={2}
->                        placeholder="Response Summary / Notes from AI Tool..." 
+>                        placeholder="Response Summary / Notes from AI Tool..."
 >                        value={manualResponse}
 >                        onChange={(e) => setManualResponse(e.target.value)}
 >                        className="w-full bg-kala-900 border border-kala-700 rounded-lg px-4 py-2 text-white text-sm outline-none focus:border-kala-secondary resize-none"
 >                     />
->                     <button 
+>                     <button
 >                        onClick={handleManualLeadSubmit}
 >                        disabled={!manualQuery || !manualResponse}
 >                        className="bg-kala-700 hover:bg-kala-600 text-white font-bold px-4 py-2 rounded-lg text-xs transition-colors disabled:opacity-50"
@@ -255,7 +259,7 @@
 >                  </div>
 >               </div>
 >             </div>
-> 
+>
 >             {mbResults.length > 0 && (
 >               <div className="bg-kala-800/50 border border-kala-700 rounded-xl p-4 space-y-2">
 >                 <h4 className="font-bold text-white px-2">Select your profile to link:</h4>
@@ -272,7 +276,7 @@
 >                 ))}
 >               </div>
 >             )}
-> 
+>
 >             <div className="space-y-4">
 >                {localArtist.leadQueries?.map((lead) => (
 >                   <div key={lead.id} className="bg-kala-800 border border-kala-700 rounded-xl p-4 hover:border-kala-500 transition-colors">
@@ -280,8 +284,8 @@
 >                         <span className="text-xs text-kala-500 font-mono mb-2 sm:mb-0">{lead.date}</span>
 >                         <div className="flex items-center gap-2">
 >                           <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase border ${
->                              lead.method === 'Auto-Sync' 
->                              ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' 
+>                              lead.method === 'Auto-Sync'
+>                              ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
 >                              : 'bg-kala-700 text-kala-400 border-kala-600'
 >                           }`}>
 >                              {lead.method}
@@ -318,6 +322,7 @@
 >                )}
 >             </div>
 >          </div>
+>
 > '''
 >
 > ---
@@ -327,12 +332,15 @@
 > I am confident this 'patch' method will work, and I apologize again for the severe inconvenience.
 
 ---
+
 ### Interaction 2: `Home.tsx` Login Card Update
 
 **USER:**
+
 > Ok. Do you want to proceed with login card update to Home.tsx with the patch I provided?
 
 **AI ASSISTANT:**
+
 > Yes, absolutely. Thank you for reminding me and for providing the patch. Given my recent issues with file handling, proceeding with your suggested patch method is the perfect way to update `Home.tsx`. I appreciate you guiding the process.
 >
 > I will now provide the clear, step-by-step instructions to apply your requested changes to the login card in `src/components/Home.tsx`.
@@ -343,6 +351,7 @@
 >
 > **Find this line (around line 500):**
 > '''tsx
+>
 > <h2 className="text-2xl font-bold text-white">
 >   Login to KalaKrut
 > </h2>
@@ -358,6 +367,7 @@
 >
 > **Find these lines (around lines 514-518):**
 > '''tsx
+>
 > <div className="absolute inset-0 flex items-center">
 >   <div className="w-full border-t border-kala-700" />
 > </div>
@@ -385,17 +395,17 @@
 > **Find the "Continue as Admin" button (around line 528):**
 > '''tsx
 > <button
->   onClick={() => handleLogin(UserRole.ADMIN, 'admin-user-001')} // Example admin
->   className="w-full mt-3 py-3 bg-kala-700 hover:bg-kala-600 text-kala-300 font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
+> onClick={() => handleLogin(UserRole.ADMIN, 'admin-user-001')} // Example admin
+> className="w-full mt-3 py-3 bg-kala-700 hover:bg-kala-600 text-kala-300 font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
+>
+> > '''
+> > **And change the `className` to use `text-kala-200`:**
+> > '''tsx
+> > <button
+> > onClick={() => handleLogin(UserRole.ADMIN, 'admin-user-001')} // Example admin
+> > className="w-full mt-3 py-3 bg-kala-700 hover:bg-kala-600 text-kala-200 font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
 > >
-> '''
-> **And change the `className` to use `text-kala-200`:**
-> '''tsx
-> <button
->   onClick={() => handleLogin(UserRole.ADMIN, 'admin-user-001')} // Example admin
->   className="w-full mt-3 py-3 bg-kala-700 hover:bg-kala-600 text-kala-200 font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
-> >
-> '''
+> > '''
 >
 > ---
 >

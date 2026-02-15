@@ -1,4 +1,20 @@
-export const FORBIDDEN_TERMS = ['illicit', 'foul', 'badword', 'hate', 'scam', 'violence', 'illegal', 'fraud', 'terror', 'metaverse', 'nft_scam', 'rugpull', 'darkweb', 'xxx', 'nsfw'];
+export const FORBIDDEN_TERMS = [
+  'illicit',
+  'foul',
+  'badword',
+  'hate',
+  'scam',
+  'violence',
+  'illegal',
+  'fraud',
+  'terror',
+  'metaverse',
+  'nft_scam',
+  'rugpull',
+  'darkweb',
+  'xxx',
+  'nsfw',
+];
 
 /**
  * Checks text content for forbidden terms.
@@ -11,4 +27,5 @@ export const checkContentForViolation = (text: string): boolean => {
   return false;
 };
 
-export const MODERATION_WARNING_TEXT = "Zero Tolerance Policy: Content is monitored by AI. Use of illicit, foul, or hateful language/content (text, audio, video, NFT) will result in an IMMEDIATE ACCOUNT BLOCK subject to appeal.";
+export const MODERATION_WARNING_TEXT =
+  'Zero Tolerance Policy: Content is monitored by AI. Use of illicit, foul, or hateful language/content (text, audio, video, NFT) will result in an IMMEDIATE ACCOUNT BLOCK subject to appeal.';

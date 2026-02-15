@@ -1,4 +1,3 @@
-
 require('dotenv').config();
 const express = require('express');
 const sgMail = require('@sendgrid/mail');
@@ -11,7 +10,8 @@ app.use(express.json());
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 app.post('/send-email', async (req, res) => {
-  const { to, subject, text, html, templateId, dynamic_template_data } = req.body;
+  const { to, subject, text, html, templateId, dynamic_template_data } =
+    req.body;
 
   const msg = {
     to,
@@ -30,7 +30,7 @@ app.post('/send-email', async (req, res) => {
   } catch (error) {
     console.error('Error sending email:', error);
     if (error.response) {
-      console.error(error.response.body)
+      console.error(error.response.body);
     }
     res.status(500).send({ success: false, message: 'Error sending email' });
   }

@@ -1,4 +1,3 @@
-
 export enum UserRole {
   ADMIN = 'Admin',
   SYSTEM_ADMIN_LIVE = 'System Admin (Live)',
@@ -9,7 +8,7 @@ export enum UserRole {
   ORGANIZER = 'Organizer',
   DAO_MEMBER = 'DAO Member',
   SERVICE_PROVIDER = 'Service Provider',
-  DAO_GOVERNOR = 'DAO Governor'
+  DAO_GOVERNOR = 'DAO Governor',
 }
 
 export interface SmartContractDraft {
@@ -44,7 +43,12 @@ export interface RevenueStats {
     royalties: number;
     licensing: number;
   };
-  recentPayouts: { date: string; amount: number; method: string; status: 'Completed' | 'Processing' }[];
+  recentPayouts: {
+    date: string;
+    amount: number;
+    method: string;
+    status: 'Completed' | 'Processing';
+  }[];
 }
 
 export interface EquityOpportunity {
@@ -73,17 +77,17 @@ export interface LeadQuery {
 }
 
 export interface CircleMember {
-    id: string;
-    name: string;
-    avatar: string;
-    role: string;
+  id: string;
+  name: string;
+  avatar: string;
+  role: string;
 }
 
 export interface Artist {
-    id: string;
-    name: string;
-    bio: string; // from MusicBrainz 'disambiguation'
-  }
+  id: string;
+  name: string;
+  bio: string; // from MusicBrainz 'disambiguation'
+}
 
 export interface ArtistProfile extends User {
   coverImage: string;
@@ -115,8 +119,21 @@ export interface ArtistProfile extends User {
     hasLeadGeniusSync?: boolean;
   };
   savedPaymentMethods?: {
-    crypto: { id: string; network: string; address: string; label: string; isDefault?: boolean }[];
-    fiat: { id: string; type: 'Card' | 'Bank'; last4: string; label: string; expiry?: string; isDefault?: boolean }[];
+    crypto: {
+      id: string;
+      network: string;
+      address: string;
+      label: string;
+      isDefault?: boolean;
+    }[];
+    fiat: {
+      id: string;
+      type: 'Card' | 'Bank';
+      last4: string;
+      label: string;
+      expiry?: string;
+      isDefault?: boolean;
+    }[];
   };
   revenue?: RevenueStats;
   leadQueries?: LeadQuery[];
@@ -178,7 +195,7 @@ export interface Proposal {
   currentParticipation: number; // Percentage (e.g., 15)
   isCritical?: boolean;
   // Linked Contract
-  contractData?: SmartContractDraft; 
+  contractData?: SmartContractDraft;
 }
 
 export interface Milestone {
@@ -236,7 +253,12 @@ export interface ServiceListing {
   id: string;
   title: string;
   provider: string;
-  category: 'Consultancy' | 'Grant Writing' | 'Legal' | 'Marketing' | 'Production';
+  category:
+    | 'Consultancy'
+    | 'Grant Writing'
+    | 'Legal'
+    | 'Marketing'
+    | 'Production';
   rate: string;
   rating: number;
   reviews: number;
@@ -339,24 +361,24 @@ export interface StaffMember {
   avatar: string;
   email: string;
   lastActive: string;
-  
+
   // Detailed HR Fields
   designation: string;
   employmentDate: string;
   salary: number; // Monthly Base Salary
   currency: string;
   taxDeductions: number; // Fixed amount or calculated
-  
+
   // Time Tracking (Monthly)
   normalHours: number;
   hoursWorked: number;
   overtimeHours: number;
   overtimePaid: number;
-  
+
   // Leave Management (Days)
   leavesAccrued: number;
   leavesUsed: number;
-  
+
   // Tasks
   duties: string[];
   monthlyTasks: string[];
@@ -369,7 +391,11 @@ export interface ModerationCase {
   userRole: UserRole;
   violationType: string;
   contentSnippet: string;
-  status: 'Blocked' | 'Appeal Pending' | 'Resolved - Unblocked' | 'Resolved - Ban Upheld';
+  status:
+    | 'Blocked'
+    | 'Appeal Pending'
+    | 'Resolved - Unblocked'
+    | 'Resolved - Ban Upheld';
   timestamp: string;
   appealReason?: string;
 }

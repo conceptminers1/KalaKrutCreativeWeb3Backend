@@ -1,4 +1,3 @@
-
 export enum UserRole {
   ARTIST = 'Artist',
   VENUE = 'Venue',
@@ -51,23 +50,23 @@ export interface Event {
 }
 
 export interface Sponsor {
-    id: string;
-    name: string;
+  id: string;
+  name: string;
 }
 
 export interface Nft {
-    id: string;
-    tokenId: string;
-    assetUrl: string;
+  id: string;
+  tokenId: string;
+  assetUrl: string;
 }
 
 export interface MarketplaceListing {
-    id: string;
-    title: string;
-    description: string;
-    price: number;
-    currency: string;
-    sellerId: string; // Links to an Artist/Producer node
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  currency: string;
+  sellerId: string; // Links to an Artist/Producer node
 }
 
 // Edges
@@ -93,27 +92,27 @@ export interface CollaboratedWith {
 }
 
 export interface Sponsored {
-    sponsorId: string;
-    eventId: string;
+  sponsorId: string;
+  eventId: string;
 }
 
 export interface HostedAt {
-    eventId: string;
-    venueId: string;
+  eventId: string;
+  venueId: string;
 }
 
 export interface HasMember {
-    groupId: string; // artistId of the group
-    memberId: string;
+  groupId: string; // artistId of the group
+  memberId: string;
 }
 
 export interface Produced {
-    producerId: string; // artistId of the producer
-    trackId: string;
+  producerId: string; // artistId of the producer
+  trackId: string;
 }
 
 export interface AssociatedWith {
-    sourceNodeId: string;
-    targetNodeId: string;
-    relationship: string; // E.g., 'TICKET_FOR_EVENT'
+  sourceNodeId: string;
+  targetNodeId: string;
+  relationship: string; // E.g., 'TICKET_FOR_EVENT'
 }
