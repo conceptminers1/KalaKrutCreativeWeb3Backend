@@ -13,10 +13,26 @@
       ],
       "name": "AddressEmptyCode",
       "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "AddressInsufficientBalance",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "FailedInnerCall",
+      "type": "error"
     }
   ],
-  "bytecode": "0x60556032600b8282823980515f1a607314602657634e487b7160e01b5f525f60045260245ffd5b305f52607381538281f3fe730000000000000000000000000000000000000000301460806040525f80fdfea2646970667358221220b701224b6cfacfc73e82b2d428a4836adb40cd4d6009fc15c05492d4370e923b64736f6c63430008190033",
-  "deployedBytecode": "0x730000000000000000000000000000000000000000301460806040525f80fdfea2646970667358221220b701224b6cfacfc73e82b2d428a4836adb40cd4d6009fc15c05492d4370e923b64736f6c63430008190033",
+  "bytecode": "0x60808060405234601757603a9081601d823930815050f35b600080fdfe600080fdfea26469706673582212204bfc03665d88e9d0690156beb6cea99fbae6627fa352a2772598bc504d08d77a64736f6c63430008180033",
+  "deployedBytecode": "0x600080fdfea26469706673582212204bfc03665d88e9d0690156beb6cea99fbae6627fa352a2772598bc504d08d77a64736f6c63430008180033",
   "linkReferences": {},
   "deployedLinkReferences": {}
 }

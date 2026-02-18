@@ -20,10 +20,10 @@ contract KalaKrutGovernor is Governor, GovernorSettings, GovernorTimelockControl
     constructor(
         IVotes _token,
         TimelockController _timelock
-    ) Governor("KalaKrutGovernor") GovernorSettings(0, 4, 100) GovernorTimelockControl(_timelock) GovernorVotes(_token) GovernorVotesQuorumFraction(4) {
+    ) Governor("KalaKrutGovernor") GovernorSettings(0, 40320, 100) GovernorTimelockControl(_timelock) GovernorVotes(_token) GovernorVotesQuorumFraction(4) {
         // GovernorSettings:
         // initialVotingDelay: 0 blocks (can be changed)
-        // initialVotingPeriod: 4 blocks (~1 minute on Ethereum, can be changed)
+        // initialVotingPeriod: 40320 blocks (~1 week on Ethereum, can be changed)
         // initialProposalThreshold: 100 votes (user must have 100 votes to create a proposal)
         
         // GovernorVotesQuorumFraction:

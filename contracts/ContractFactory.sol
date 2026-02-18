@@ -1,96 +1,122 @@
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
 
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+// Base contract
+import "@openzeppelin/contracts/access/AccessControl.sol";
+
+// Import all 8 contracts to be created by the factory
+import "./KalaKrutToken.sol";
+import "@openzeppelin/contracts/governance/TimelockController.sol";
+import "./KalaKrutGovernor.sol";
+import "./Treasury.sol";
 import "./KalaKrutNFT.sol";
 import "./EventTicket.sol";
 import "./Fractionalizer.sol";
 import "./Escrow.sol";
-import "./KalaKrutGovernor.sol";
-import "./KalaKrutToken.sol";
-import {TimelockController} from "@openzeppelin/contracts/governance/TimelockController.sol";
-import "./Treasury.sol";
 
-/**
- * @title ContractFactory
- * @dev A factory for creating instances of all KalaKrut contracts.
- */
-contract ContractFactory {
-    event NFTCollectionCreated(address indexed owner, address indexed nftAddress);
-    event EventTicketCreated(address indexed owner, address indexed ticketAddress);
-    event FractionalizerCreated(address indexed owner, address indexed fractionalizerAddress);
-    event EscrowCreated(address indexed payer, address indexed payee, address indexed escrowAddress);
-    event DAOCreated(address indexed owner, address governor, address timelock, address token, address treasury);
+// Interfaces needed for casting
+import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 
-    /**
-     * @dev Creates a new NFT collection.
-     */
-    function createNFTCollection(string memory name, string memory symbol) external {
-        KalaKrutNFT newNFT = new KalaKrutNFT(msg.sender, name, symbol);
-        emit NFTCollectionCreated(msg.sender, address(newNFT));
+contract ContractFactory is AccessControl {
+    bytes32 public constant CREATOR_ROLE = keccak256("CREATOR_ROLE");
+
+    event ContractCreated(
+        address indexed contractAddress,
+        address indexed creator,
+        string contractType,
+        uint256 timestamp
+    );
+
+    constructor(address initialAdmin) {
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(CREATOR_ROLE, initialAdmin);
+        _grantRole(CREATOR_ROLE, msg.sender);
     }
 
-    /**
-     * @dev Creates a new Event Ticket contract.
-     */
-    function createEventTicket(string memory uri) external {
-        EventTicket newTicket = new EventTicket(msg.sender, uri);
-        emit EventTicketCreated(msg.sender, address(newTicket));
+    // 1. Create KalaKrutToken
+    function createKalaKrutToken() public onlyRole(CREATOR_ROLE) returns (address) {
+        KalaKrutToken newToken = new KalaKrutToken(msg.sender);
+        emit ContractCreated(address(newToken), msg.sender, "KalaKrutToken", block.timestamp);
+        return address(newToken);
     }
 
-    /**
-     * @dev Creates a new Fractionalizer contract.
-     * The caller must have approved the factory to take the NFT.
-     */
+    // 2. Create TimelockController
+    function createTimelockController(
+        uint256 minDelay,
+        address[] memory proposers,
+        address[] memory executors
+    ) public onlyRole(CREATOR_ROLE) returns (address) {
+        TimelockController newTimelock = new TimelockController(minDelay, proposers, executors, msg.sender);
+        emit ContractCreated(address(newTimelock), msg.sender, "TimelockController", block.timestamp);
+        return address(newTimelock);
+    }
+
+    // 3. Create KalaKrutGovernor
+    function createGovernor(
+        address _token,
+        // CORRECTED: Changed address to address payable
+        address payable _timelock 
+    ) public onlyRole(CREATOR_ROLE) returns (address) {
+        // Cast addresses to the required contract types
+        KalaKrutGovernor newGovernor = new KalaKrutGovernor(IVotes(_token), TimelockController(_timelock));
+        emit ContractCreated(address(newGovernor), msg.sender, "KalaKrutGovernor", block.timestamp);
+        return address(newGovernor);
+    }
+
+    // 4. Create Treasury
+    function createTreasury() public onlyRole(CREATOR_ROLE) returns (address) {
+        Treasury newTreasury = new Treasury(payable(msg.sender));
+        emit ContractCreated(address(newTreasury), msg.sender, "Treasury", block.timestamp);
+        return address(newTreasury);
+    }
+
+    // 5. Create KalaKrutNFT
+    function createKalaKrutNFT(
+        string memory _name,
+        string memory _symbol
+    ) public onlyRole(CREATOR_ROLE) returns (address) {
+        KalaKrutNFT newNFT = new KalaKrutNFT(msg.sender, _name, _symbol);
+        emit ContractCreated(address(newNFT), msg.sender, "KalaKrutNFT", block.timestamp);
+        return address(newNFT);
+    }
+
+    // 6. Create EventTicket
+    function createEventTicket(
+        string memory _uri
+    ) public onlyRole(CREATOR_ROLE) returns (address) {
+        EventTicket newTicket = new EventTicket(msg.sender, _uri);
+        emit ContractCreated(address(newTicket), msg.sender, "EventTicket", block.timestamp);
+        return address(newTicket);
+    }
+
+    // 7. Create Fractionalizer
     function createFractionalizer(
         string memory name,
         string memory symbol,
-        address nftAddress,
-        uint256 nftId,
-        uint256 totalSupply
-    ) external {
-        Fractionalizer newFractionalizer = new Fractionalizer(msg.sender, name, symbol, nftAddress, nftId, totalSupply);
-        emit FractionalizerCreated(msg.sender, address(newFractionalizer));
+        address _nftAddress,
+        uint256 _nftId,
+        uint256 _totalSupply
+    ) public onlyRole(CREATOR_ROLE) returns (address) {
+        Fractionalizer newFractionalizer = new Fractionalizer(
+            msg.sender, // initialOwner of the shares
+            name,
+            symbol,
+            _nftAddress,
+            _nftId,
+            _totalSupply
+        );
+        emit ContractCreated(address(newFractionalizer), msg.sender, "Fractionalizer", block.timestamp);
+        return address(newFractionalizer);
     }
 
-    /**
-     * @dev Creates a new Escrow contract.
-     */
-    function createEscrow(address payee) external {
-        Escrow newEscrow = new Escrow(msg.sender, payee, msg.sender);
-        emit EscrowCreated(msg.sender, payee, address(newEscrow));
-    }
-
-    /**
-     * @dev Creates a new DAO, including the Governor, Timelock, Token, and Treasury.
-     */
-    function createDAO(uint256 minTimelockDelay) external {
-        // 1. Create the Token
-        KalaKrutToken token = new KalaKrutToken(msg.sender);
-
-        // 2. Create the Timelock
-        address[] memory proposers = new address[](1);
-        address[] memory executors = new address[](1);
-        // Initially, anyone can execute, but this can be restricted.
-        executors[0] = address(0);
-        TimelockController timelock = new TimelockController(minTimelockDelay, proposers, executors, msg.sender);
-
-        // 3. Create the Governor
-        KalaKrutGovernor governor = new KalaKrutGovernor(token, timelock);
-
-        // 4. Create the Treasury
-        Treasury treasury = new Treasury(address(governor));
-
-        // 5. Set up roles
-        // The governor is the only one who can propose to the timelock.
-        proposers[0] = address(governor);
-        timelock.grantRole(timelock.PROPOSER_ROLE(), address(governor));
-        // The governor is also the only one who can cancel proposals.
-        timelock.grantRole(timelock.CANCELLER_ROLE(), address(governor));
-
-        // 6. Revoke the deployer's admin role on the timelock.
-        // The timelock is now only controlled by the governor.
-        timelock.renounceRole(timelock.DEFAULT_ADMIN_ROLE(), msg.sender);
-
-        emit DAOCreated(msg.sender, address(governor), address(timelock), address(token), address(treasury));
+    // 8. Create Escrow
+    function createEscrow(
+        address payable _beneficiary,
+        address _arbiter
+    ) public onlyRole(CREATOR_ROLE) returns (address) {
+        Escrow newEscrow = new Escrow(payable(msg.sender), _beneficiary, _arbiter);
+        emit ContractCreated(address(newEscrow), msg.sender, "Escrow", block.timestamp);
+        return address(newEscrow);
     }
 }

@@ -793,39 +793,114 @@ const Home: React.FC<HomeProps> = ({ onLogin, onViewNews, onJoin }) => {
             </div>
             <div className="p-6 space-y-4">
               <p className="text-sm text-kala-400 mb-2">
-                Join {stats.totalMembers.toLocaleString()} creators, venues, and
-                organizers.
+                Join 8 creators, venues, and organizers.
               </p>
               <div className="space-y-3">
-                {previewMembers.map((member, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-3 p-3 rounded-lg bg-kala-800 border border-kala-700"
-                  >
-                    <img
-                      src={member.avatar}
-                      alt={member.name}
-                      className="w-10 h-10 rounded-full object-cover border border-kala-600"
-                    />
-                    <div>
-                      <div className="text-sm font-bold text-white flex items-center gap-2">
-                        {member.name}
-                        {!(member as any).isMock && (
-                          <span className="text-[9px] bg-green-500/20 text-green-400 px-1 rounded border border-green-500/30">
-                            NEW
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-xs text-kala-400 flex items-center gap-2">
-                        <span>{member.role}</span>
-                        <span className="w-1 h-1 rounded-full bg-kala-600"></span>
-                        <span className="flex items-center gap-1">
-                          <MapPin className="w-3 h-3" /> {member.location}
-                        </span>
-                      </div>
+                <div
+                  className="flex items-center gap-3 p-3 rounded-lg bg-kala-800 border border-kala-700"
+                >
+                  <img
+                    src="https://picsum.photos/seed/lunac/100/100"
+                    alt="Luna Eclipse"
+                    className="w-10 h-10 rounded-full object-cover border border-kala-600"
+                  />
+                  <div>
+                    <div className="text-sm font-bold text-white flex items-center gap-2">
+                      Luna Eclipse
+                    </div>
+                    <div className="text-xs text-kala-400 flex items-center gap-2">
+                      <span>Artist</span>
+                      <span className="w-1 h-1 rounded-full bg-kala-600"></span>
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-3 h-3" /> Brooklyn, NY
+                      </span>
                     </div>
                   </div>
-                ))}
+                </div>
+                <div
+                  className="flex items-center gap-3 p-3 rounded-lg bg-kala-800 border border-kala-700"
+                >
+                  <img
+                    src="https://picsum.photos/seed/warehouse/100/100"
+                    alt="The Warehouse"
+                    className="w-10 h-10 rounded-full object-cover border border-kala-600"
+                  />
+                  <div>
+                    <div className="text-sm font-bold text-white flex items-center gap-2">
+                      The Warehouse
+                    </div>
+                    <div className="text-xs text-kala-400 flex items-center gap-2">
+                      <span>Venue</span>
+                      <span className="w-1 h-1 rounded-full bg-kala-600"></span>
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-3 h-3" /> London, UK
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  className="flex items-center gap-3 p-3 rounded-lg bg-kala-800 border border-kala-700"
+                >
+                  <img
+                    src="https://picsum.photos/seed/techstart/100/100"
+                    alt="TechStart Inc."
+                    className="w-10 h-10 rounded-full object-cover border border-kala-600"
+                  />
+                  <div>
+                    <div className="text-sm font-bold text-white flex items-center gap-2">
+                      TechStart Inc.
+                    </div>
+                    <div className="text-xs text-kala-400 flex items-center gap-2">
+                      <span>Sponsor</span>
+                      <span className="w-1 h-1 rounded-full bg-kala-600"></span>
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-3 h-3" /> San Francisco, CA
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  className="flex items-center gap-3 p-3 rounded-lg bg-kala-800 border border-kala-700"
+                >
+                  <img
+                    src="https://picsum.photos/seed/govalice/100/100"
+                    alt="Governor Alice"
+                    className="w-10 h-10 rounded-full object-cover border border-kala-600"
+                  />
+                  <div>
+                    <div className="text-sm font-bold text-white flex items-center gap-2">
+                      Governor Alice
+                    </div>
+                    <div className="text-xs text-kala-400 flex items-center gap-2">
+                      <span>DAO_Governor</span>
+                      <span className="w-1 h-1 rounded-full bg-kala-600"></span>
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-3 h-3" /> Decentralized
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  className="flex items-center gap-3 p-3 rounded-lg bg-kala-800 border border-kala-700"
+                >
+                  <img
+                    src="https://picsum.photos/seed/leoval/100/100"
+                    alt="Leo Valdez"
+                    className="w-10 h-10 rounded-full object-cover border border-kala-600"
+                  />
+                  <div>
+                    <div className="text-sm font-bold text-white flex items-center gap-2">
+                      Leo Valdez
+                    </div>
+                    <div className="text-xs text-kala-400 flex items-center gap-2">
+                      <span>DAO Member</span>
+                      <span className="w-1 h-1 rounded-full bg-kala-600"></span>
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-3 h-3" /> Miami, FL
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="pt-4 border-t border-kala-800">

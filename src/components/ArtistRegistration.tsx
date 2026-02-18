@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   User,
   Mail,
@@ -18,7 +18,7 @@ import {
 } from '../services/moderationService';
 import { useToast } from '../contexts/ToastContext';
 import { useData } from '../contexts/DataContext';
-import { UserRole } from '../types';
+import { UserRole, Lead } from '../types';
 import { searchArtist } from '../services/musicBrainzService';
 import { Artist } from '../data/knowledgeGraphSchema';
 
@@ -27,12 +27,26 @@ interface ArtistRegistrationProps {
   onBlockUser: () => void;
 }
 
+// List of notable electronic artists for random pre-fill
+const notableArtists = [
+  'Aphex Twin',
+  'Boards of Canada',
+  'Autechre',
+  'Squarepusher',
+  'Flying Lotus',
+  'deadmau5',
+  'Daft Punk',
+  'The Chemical Brothers',
+  'Massive Attack',
+  'Portishead',
+];
+
 const ArtistRegistration: React.FC<ArtistRegistrationProps> = ({
   onComplete,
   onBlockUser,
 }) => {
   const { showToast } = useToast();
-  const { addUser } = useData();
+  const { addUser, addLead } = useData();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -51,12 +65,18 @@ const ArtistRegistration: React.FC<ArtistRegistrationProps> = ({
   const [searchResults, setSearchResults] = useState<Artist[]>([]);
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
 
+  // Pre-fill with a random artist on component mount for demo purposes
+  useEffect(() => {
+    const randomArtist = notableArtists[Math.floor(Math.random() * notableArtists.length)];
+    setMusicBrainzSearch(randomArtist);
+  }, []);
+
   const handleSearch = async () => {
     if (!musicBrainzSearch) return;
     const results = await searchArtist(musicBrainzSearch);
     setSearchResults(results);
     if (results.length === 0) {
-      showToast('No artists found on MusicBrainz with that name.', 'warning');
+      showToast(`No artists found on MusicBrainz matching "${musicBrainzSearch}".`, 'warning');
     }
   };
 
@@ -67,8 +87,10 @@ const ArtistRegistration: React.FC<ArtistRegistrationProps> = ({
       stageName: artist.name,
       bio: artist.bio || formData.bio,
       musicBrainzId: artist.id,
+      genres: artist.genres?.join(', ') || formData.genres
     });
     setSearchResults([]);
+    showToast(`Profile bootstrapped with data for ${artist.name}.`, 'success')
   };
 
   const handleChange = (
@@ -86,45 +108,31 @@ const ArtistRegistration: React.FC<ArtistRegistrationProps> = ({
       return;
     }
 
-    const tempPassword = Math.random().toString(36).slice(-8);
-
-    const newUserProfile = {
-      id: `u-${Date.now()}`,
+    // Create a lead from the form data
+    const newLead: Lead = {
+      id: `lead-${Date.now()}`,
       name: formData.stageName || `${formData.firstName} ${formData.lastName}`,
-      role: UserRole.ARTIST,
-      avatar: 'https://picsum.photos/seed/' + Date.now() + '/200',
-      location: formData.location,
-      genres: formData.genres.split(',').map((s) => s.trim()),
       bio: formData.bio,
+      genres: formData.genres.split(',').map((s) => s.trim()),
       email: formData.email,
-      password: tempPassword,
-      verified: false,
-      pressKit: { photos: [], topTracks: [], techRiderUrl: '', socials: [] },
-      stats: {
-        gigsCompleted: 0,
-        activeGigs: 0,
-        rating: 0,
-        responseTime: 'N/A',
-      },
-      level: 1,
-      xp: 0,
+      location: formData.location,
+      status: 'New',
       musicBrainzId: formData.musicBrainzId,
     };
 
-    addUser(newUserProfile as any);
+    const leadAdded = addLead(newLead);
 
-    showToast(
-      `Account created! Confirmation sent to ${formData.email}. Password: ${tempPassword}`,
-      'success'
-    );
-
-    console.log('--- SIMULATED EMAIL ---');
-    console.log(`To: ${formData.email}`);
-    console.log(`Subject: Welcome to KalaKrut!`);
-    console.log(
-      `Body: Your account has been created. Your temporary password is: ${tempPassword}`
-    );
-    console.log('-----------------------');
+    if (leadAdded) {
+       showToast(
+        `Application submitted for ${newLead.name}! An admin will review your details.`,
+        'success'
+      );
+    } else {
+       showToast(
+        `An application for ${newLead.name} already exists.`,
+        'warning'
+      );
+    }
 
     onComplete();
   };
@@ -157,7 +165,7 @@ const ArtistRegistration: React.FC<ArtistRegistrationProps> = ({
           </h3>
           <p className="text-sm text-kala-300 mb-2">
             Bootstrap your profile by linking to an existing MusicBrainz artist
-            entry. This will pre-fill your name and bio.
+            entry. This can pre-fill your name, bio, and genres.
           </p>
           <div className="flex gap-2">
             <input
@@ -185,10 +193,10 @@ const ArtistRegistration: React.FC<ArtistRegistrationProps> = ({
                     <button
                       type="button"
                       onClick={() => handleSelectArtist(artist)}
-                      className="w-full text-left p-2 hover:bg-kala-700 rounded-md"
+                      className="w-full text-left p-2 hover:bg-kala-700 rounded-md transition-colors"
                     >
                       <p className="font-bold">{artist.name}</p>
-                      <p className="text-sm text-kala-400">{artist.bio}</p>
+                      <p className="text-sm text-kala-400 line-clamp-2">{artist.bio}</p>
                     </button>
                   </li>
                 ))}
@@ -268,7 +276,7 @@ const ArtistRegistration: React.FC<ArtistRegistrationProps> = ({
                 />
               </div>
               <p className="text-[10px] text-kala-500 mt-1">
-                A confirmation email with your password will be sent here.
+                This will be used for notifications and to log in.
               </p>
             </div>
           </div>
@@ -396,7 +404,7 @@ const ArtistRegistration: React.FC<ArtistRegistrationProps> = ({
           type="submit"
           className="w-full bg-kala-secondary text-kala-900 font-bold py-4 rounded-xl hover:bg-cyan-400 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-cyan-900/20"
         >
-          <Save className="w-5 h-5" /> Save Profile & Register
+          <Save className="w-5 h-5" /> Submit Application
         </button>
       </form>
     </div>

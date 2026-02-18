@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, Suspense, useTransition } from 'react';
 import Layout from './components/Layout';
 import Home from './components/Home';
@@ -13,6 +14,7 @@ import { Web3Provider } from './contexts/Web3Context';
 import { WalletProvider, useWallet } from './contexts/WalletContext';
 import { ToastProvider, useToast } from './contexts/ToastContext';
 import { DataProvider, useData } from './contexts/DataContext';
+import { AuthProvider } from './contexts/AuthContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import {
   UserRole,
@@ -77,6 +79,8 @@ const MembershipPlans = React.lazy(
   () => import('./components/MembershipPlans')
 );
 const MyCircle = React.lazy(() => import('./components/MyCircle'));
+const AdminReview = React.lazy(() => import('./components/AdminReview'));
+const ContractsDashboard = React.lazy(() => import('./components/ContractsDashboard'));
 
 const PageLoader = () => (
   <div className="h-[60vh] w-full flex flex-col items-center justify-center text-kala-400">
@@ -162,7 +166,7 @@ const AppContent: React.FC = () => {
   const [isPending, startTransition] = useTransition();
   const [currentView, setCurrentView] = useState('home');
   const [currentUserRole, setCurrentUserRole] = useState<UserRole>(
-    UserRole.ARTIST
+    UserRole.GUEST
   );
   const [currentUser, setCurrentUser] = useState<IArtistProfile | null>(null);
   const [isAppLoggedIn, setIsAppLoggedIn] = useState(false);
@@ -294,17 +298,45 @@ const AppContent: React.FC = () => {
     setIsLoggingIn(true);
     let targetUser: any;
 
+    // DEMO MODE LOGIN (using mock data)
     if (isDemoMode) {
       targetUser = MOCK_USERS_BY_ROLE[role] || MOCK_ARTIST_PROFILE;
-      if (method === 'web3' && !isWalletConnected) await connectWallet();
+      if (method === 'web3' && !isWalletConnected) {
+        try {
+          await connectWallet();
+        } catch (e) { 
+          notify('Wallet connection failed.', 'error');
+          setIsLoggingIn(false);
+          return;
+        }
+      }
+    // LIVE MODE LOGIN (using API)
     } else {
-      if (method === 'web3') {
+      if (method === 'web2' && credentials) {
+        try {
+          const response = await fetch('http://localhost:3001/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(credentials),
+          });
+          const data = await response.json();
+          if (response.ok) {
+            targetUser = data.user;
+          } else {
+            notify(data.message || 'Login failed.', 'error');
+            setIsLoggingIn(false);
+            return;
+          }
+        } catch (error) {
+          notify('Login request failed. Is the server running?', 'error');
+          setIsLoggingIn(false);
+          return;
+        }
+      } else if (method === 'web3') {
         const addr = isWalletConnected ? walletAddress : await connectWallet();
         if (addr) {
-          targetUser = findUserByWallet(addr);
+          targetUser = findUserByWallet(addr); // Still uses mock data, can be expanded later
         }
-      } else if (credentials?.email) {
-        targetUser = findUserByEmail(credentials.email);
       }
     }
 
@@ -313,26 +345,21 @@ const AppContent: React.FC = () => {
       setIsLoggingIn(false);
       return;
     }
-    if (
-      (targetUser.role === UserRole.ADMIN ||
-        targetUser.role === UserRole.DAO_GOVERNOR ||
-        targetUser.role === UserRole.SYSTEM_ADMIN_LIVE) &&
-      method === 'web3'
-    ) {
-      notify(
-        'Admin-level roles may not use wallet-based login for security reasons.',
-        'error'
-      );
+    
+    // Security check for high-privilege roles using Web3 login in live mode
+    if (!isDemoMode && (targetUser.role === UserRole.ADMIN || targetUser.role === UserRole.SYSTEM_ADMIN_LIVE) && method === 'web3') {
+      notify('Admin-level roles may not use wallet-based login in live mode for security reasons.', 'error');
       setIsLoggingIn(false);
       return;
     }
 
+    setCurrentUserRole(targetUser.role);
+    setCurrentUser(targetUser as IArtistProfile);
+    setSelectedProfile(targetUser as IArtistProfile);
+    setIsAppLoggedIn(true);
+    setIsUserBlocked(false);
+
     startTransition(() => {
-      setCurrentUserRole(targetUser.role);
-      setCurrentUser(targetUser);
-      setSelectedProfile(targetUser);
-      setIsAppLoggedIn(true);
-      setIsUserBlocked(false);
       setCurrentView('dashboard');
     });
 
@@ -343,9 +370,11 @@ const AppContent: React.FC = () => {
     setIsLoggingIn(false);
   };
 
+
   const handleLogout = () => {
     setIsAppLoggedIn(false);
     setCurrentUser(null);
+    setCurrentUserRole(UserRole.GUEST);
     setSelectedProfile(MOCK_ARTIST_PROFILE);
     disconnectWallet();
     navigate('home');
@@ -590,6 +619,29 @@ const AppContent: React.FC = () => {
                 ) : (
                   <div>Access Denied</div>
                 );
+              case 'admin_contracts':
+                return currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN_LIVE ? (
+                  <AdminContracts currentUserRole={currentUserRole} />
+                ) : (
+                  <div>Access Denied</div>
+                );
+              case 'admin_review':
+                return currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN_LIVE ? (
+                  <AdminReview />
+                ) : (
+                  <div>Access Denied</div>
+                );
+              case 'contracts_dashboard':
+                return (
+                  currentUserRole === UserRole.ADMIN ||
+                  currentUserRole === UserRole.SYSTEM_ADMIN_LIVE ||
+                  currentUserRole === UserRole.DAO_GOVERNOR ||
+                  currentUserRole === UserRole.DAO_MEMBER
+                ) ? (
+                  <ErrorBoundary><ContractsDashboard /></ErrorBoundary>
+                ) : (
+                  <div>Access Denied</div>
+                );
               case 'membership':
                 return <MembershipPlans currentUser={currentUser} />;
               case 'my_circle':
@@ -616,19 +668,7 @@ const AppContent: React.FC = () => {
                   currentUserRole === UserRole.DAO_GOVERNOR ||
                   currentUserRole === UserRole.DAO_MEMBER ||
                   currentUserRole === UserRole.SYSTEM_ADMIN_LIVE ? (
-                  <AdminContracts
-                    currentUserRole={currentUserRole} // <-- ADDED PROP
-                    currentUserName={currentUser.name} // <-- ADDED PROP
-                    onBlockUser={handleBlockUser}
-                    onChat={(name, avatar) => {
-                      setChatRecipient({
-                        ...MOCK_ARTIST_PROFILE,
-                        name,
-                        avatar,
-                      });
-                      setShowChat(true);
-                    }}
-                  />
+                  <AdminContracts currentUserRole={currentUserRole} />
                 ) : (
                   <div>Access Denied</div>
                 );
@@ -752,9 +792,11 @@ const App: React.FC = () => {
       <ToastProvider>
         <WalletProvider>
           <DataProvider>
-            <Web3Provider>
-              <AppContent />
-            </Web3Provider>
+            <AuthProvider>
+              <Web3Provider>
+                <AppContent />
+              </Web3Provider>
+            </AuthProvider>
           </DataProvider>
         </WalletProvider>
       </ToastProvider>

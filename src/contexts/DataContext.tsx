@@ -12,6 +12,8 @@ import {
   ArtistProfile,
   UserRole,
   Artist,
+  Notification,
+  ApprovalStatus,
 } from '../types';
 import {
   MOCK_ROSTER,
@@ -19,20 +21,20 @@ import {
   MOCK_PROPOSALS,
 } from '../mockData';
 
-// Lead interface, extending the basic Artist type
-interface Lead extends Artist {
-  status: 'New' | 'Contacted' | 'Closed';
-}
-
 export interface DataContextType {
   users: RosterMember[];
   marketItems: MarketplaceItem[];
   proposals: Proposal[];
-  leads: Lead[];
+  leads: ArtistProfile[];
+  notifications: Notification[];
   addUser: (user: ArtistProfile) => void;
   updateUser: (user: Partial<RosterMember>) => void;
   addMarketItem: (item: MarketplaceItem) => void;
   addLead: (artist: Artist) => boolean; // Returns true if added, false if duplicate
+  updateLeadStatus: (leadId: string, status: ArtistProfile['leadStatus']) => void;
+  removeLead: (leadId: string) => void;
+  addNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => void;
+  markNotificationsAsRead: (userId: string) => void;
   purgeMockData: () => void;
   isDemoMode: boolean;
   setDemoMode: (isDemo: boolean) => void;
@@ -142,7 +144,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     return [...tagMocks(MOCK_ROSTER), SYSTEM_ADMIN, SUPER_ADMIN];
   });
 
-  const [allLeads, setAllLeads] = useState<Lead[]>(() => {
+  const [allLeads, setAllLeads] = useState<ArtistProfile[]>(() => {
     try {
       const saved = localStorage.getItem('kk_leads');
       if (saved) {
@@ -154,6 +156,20 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     }
     return [];
   });
+  
+    const [notifications, setNotifications] = useState<Notification[]>(() => {
+    try {
+      const saved = localStorage.getItem('kk_notifications');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed.filter(Boolean);
+      }
+    } catch (error) {
+      console.error("CRITICAL: Failed to load 'kk_notifications'.", error);
+    }
+    return [];
+  });
+
 
   const [allMarketItems, setAllMarketItems] = useState<MarketplaceItem[]>(
     () => {
@@ -196,6 +212,9 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     localStorage.setItem('kk_leads', JSON.stringify(allLeads));
   }, [allLeads]);
+    useEffect(() => {
+    localStorage.setItem('kk_notifications', JSON.stringify(notifications));
+  }, [notifications]);
   useEffect(() => {
     localStorage.setItem('kk_market', JSON.stringify(allMarketItems));
   }, [allMarketItems]);
@@ -252,6 +271,23 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       )
     );
   };
+  
+    const addNotification = (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
+    const newNotification: Notification = {
+      ...notification,
+      id: `notif-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      read: false,
+    };
+    setNotifications(prev => [newNotification, ...prev]);
+  };
+
+  const markNotificationsAsRead = (userId: string) => {
+    setNotifications(prev =>
+        prev.map(n => (n.userId === userId ? { ...n, read: true } : n))
+    );
+  };
+
 
   const addMarketItem = (item: MarketplaceItem) => {
     setAllMarketItems((prev) => [{ ...item, isMock: false }, ...prev]);
@@ -264,12 +300,38 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         wasAdded = false;
         return prev;
       }
-      const newLead: Lead = { ...artist, status: 'New' };
+      const newLead: ArtistProfile = {
+        id: artist.id,
+        name: artist.name,
+        bio: artist.bio,
+        email: '',
+        location: '',
+        status: ApprovalStatus.PENDING,
+        leadStatus: 'New',
+        role: UserRole.ARTIST,
+        avatar: 'https://ui-avatars.com/api/?name=' + artist.name.replace(/ /g, '+'),
+        coverImage: '',
+        genres: [],
+        verified: false,
+        pressKit: { photos: [], topTracks: [], techRiderUrl: '', socials: [] },
+        stats: { gigsCompleted: 0, activeGigs: 0, rating: 0, responseTime: 'N/A' },
+        xp: 0,
+        level: 1,
+      };
       wasAdded = true;
       return [newLead, ...prev];
     });
     return wasAdded;
   };
+  
+  const updateLeadStatus = (leadId: string, status: ArtistProfile['leadStatus']) => {
+    setAllLeads(prev => prev.map(lead => lead.id === leadId ? { ...lead, leadStatus: status } : lead));
+  };
+
+  const removeLead = (leadId: string) => {
+    setAllLeads(prev => prev.filter(lead => lead.id !== leadId));
+  };
+
 
   const purgeMockData = () => {
     if (
@@ -292,9 +354,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       (u) => u.walletAddress?.toLowerCase() === address.toLowerCase()
     );
 
-  const visibleUsers = isDemoMode
-    ? allUsers
-    : allUsers.filter((u) => !u.isMock);
+  const visibleUsers = allUsers.filter(u => u.status === ApprovalStatus.APPROVED && !u.isMock)
+  const visibleLeads = isDemoMode ? allLeads.filter(l => l.status === ApprovalStatus.PENDING) : allLeads.filter(l => l.status === ApprovalStatus.PENDING && !l.isMock)
   const visibleMarket = allMarketItems;
   const visibleProposals = isDemoMode
     ? allProposals
@@ -314,11 +375,16 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         users: visibleUsers,
         marketItems: visibleMarket,
         proposals: visibleProposals,
-        leads: allLeads,
+        leads: visibleLeads,
+        notifications,
         addUser,
         updateUser,
         addMarketItem,
         addLead,
+        updateLeadStatus,
+        removeLead,
+        addNotification,
+        markNotificationsAsRead,
         purgeMockData,
         isDemoMode,
         setDemoMode: setIsDemoMode,

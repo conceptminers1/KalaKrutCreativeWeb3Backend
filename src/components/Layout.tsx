@@ -1,7 +1,9 @@
+
 import React, { useState, startTransition } from 'react';
 import {
   LayoutGrid,
   Users,
+  UserCheck,
   Calendar,
   Vote,
   Settings,
@@ -25,11 +27,13 @@ import {
   AlertTriangle,
   ShieldCheck,
   Trash2,
+  PlusCircle
 } from 'lucide-react';
 import { UserRole } from '../types';
 import { useData } from '../hooks/useData';
 import SupportWidget from '../components/SupportWidget';
 import { useToast } from '../contexts/ToastContext';
+import UserNotifications from './UserNotifications';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -139,6 +143,7 @@ const Layout: React.FC<LayoutProps> = ({
 
   const getAdminNavItems = () => {
     const allAdminItems = [
+      { id: 'admin_review', icon: UserCheck, label: 'User Onboarding' },
       { id: 'governance', icon: Vote, label: 'DAO Governance' },
       { id: 'contracts', icon: FileSignature, label: 'Contracts & Agreements' },
       { id: 'treasury', icon: Coins, label: 'Treasury' },
@@ -162,7 +167,7 @@ const Layout: React.FC<LayoutProps> = ({
     if (userRole === UserRole.DAO_MEMBER || userRole === UserRole.DAO_GOVERNOR) {
       daoItems.push(
         { id: 'governance', icon: Vote, label: 'DAO Governance' },
-        { id: 'contracts', icon: FileSignature, label: 'Contracts & Agreements' }
+        { id: 'contracts', icon: FileSignature, label: 'Contracts & Agreements' },
       );
     }
     if (userRole === UserRole.DAO_GOVERNOR) {
@@ -180,9 +185,12 @@ const Layout: React.FC<LayoutProps> = ({
         <div className="font-bold text-xl tracking-tighter text-white">
           Kala<span className="text-kala-secondary">Krut</span>
         </div>
-        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-          {isMobileMenuOpen ? <X /> : <Menu />}
-        </button>
+        <div className="flex items-center gap-4">
+          <UserNotifications />
+          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+            {isMobileMenuOpen ? <X /> : <Menu />}
+          </button>
+        </div>
       </div>
 
       <aside
@@ -249,6 +257,10 @@ const Layout: React.FC<LayoutProps> = ({
       </aside>
 
       <main className="flex-1 overflow-y-auto h-screen relative bg-kala-900">
+        <div className="absolute top-4 right-8 z-10 hidden lg:flex items-center gap-4">
+          <UserNotifications />
+        </div>
+
         {isDemoMode && (
           <div className="bg-gradient-to-r from-yellow-600/90 to-orange-600/90 text-white text-xs font-bold text-center py-1.5 flex items-center justify-center gap-2 sticky top-0 z-30 backdrop-blur">
             <AlertTriangle className="w-3 h-3 text-white" />

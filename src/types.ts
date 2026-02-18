@@ -1,3 +1,4 @@
+
 export enum UserRole {
   ADMIN = 'Admin',
   SYSTEM_ADMIN_LIVE = 'System Admin (Live)',
@@ -9,6 +10,21 @@ export enum UserRole {
   DAO_MEMBER = 'DAO Member',
   SERVICE_PROVIDER = 'Service Provider',
   DAO_GOVERNOR = 'DAO Governor',
+}
+
+export interface Notification {
+  id: string;
+  userId: string;
+  message: string;
+  type: 'success' | 'error' | 'info';
+  read: boolean;
+  timestamp: string;
+}
+
+export enum ApprovalStatus {
+  PENDING = 'Pending',
+  APPROVED = 'Approved',
+  REJECTED = 'Rejected',
 }
 
 export interface SmartContractDraft {
@@ -137,6 +153,19 @@ export interface ArtistProfile extends User {
   };
   revenue?: RevenueStats;
   leadQueries?: LeadQuery[];
+  status: ApprovalStatus;
+  musicBrainzId?: string;
+  source?: string;
+  generatedDate?: string;
+  notes?: string;
+  leadStatus?: 'New' | 'Contacted' | 'Closed';
+}
+
+export interface JoinRequest {
+  id: string;
+  user: ArtistProfile;
+  date: string;
+  status: ApprovalStatus;
 }
 
 export interface RosterMember {
@@ -275,15 +304,6 @@ export interface Article {
   author: string;
   image: string;
   category: 'Announcement' | 'Press Release' | 'Community' | 'Feature';
-}
-
-export interface Lead {
-  id: string;
-  email: string;
-  source: string;
-  status: 'New' | 'Contacted' | 'Converted';
-  generatedDate: string;
-  notes: string;
 }
 
 export interface ForumThread {

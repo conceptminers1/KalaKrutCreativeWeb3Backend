@@ -5,7 +5,6 @@ import {
   MarketplaceItem,
   RosterMember,
   ServiceListing,
-  Lead,
   ForumThread,
   Article,
   Proposal,
@@ -14,6 +13,7 @@ import {
   ModerationCase,
   SupportTicket,
   CircleMember,
+  SmartContractDraft,
 } from './types';
 
 // --- MOCK CIRCLE DATA ---
@@ -64,7 +64,7 @@ export const MOCK_ARTIST_PROFILE: ArtistProfile = {
   level: 2,
   password: 'password123', // Default mock password
   coverImage: 'https://picsum.photos/seed/gig1/1200/400',
-  bio: 'Electronic synthesis meets classical composition. Based in Brooklyn, Luna Eclipse has been redefining the ambient techno scene since 2021.\n\nMy sets are an immersive journey through sound and light, perfect for intimate venues and large-scale festivals alike.',
+  bio: `Electronic synthesis meets classical composition. Based in Brooklyn, Luna Eclipse has been redefining the ambient techno scene since 2021.\n\nMy sets are an immersive journey through sound and light, perfect for intimate venues and large-scale festivals alike.`,
   location: 'Brooklyn, NY',
   genres: ['Techno', 'Ambient', 'Electronica'],
   verified: true,
@@ -260,11 +260,10 @@ export const MOCK_ROSTER: RosterMember[] = [
     location: 'Brooklyn, NY',
     verified: true,
     assets: {
-      ips: ['2'],
-      events: ['1'],
-      services: ['2'],
-      products: ['5'],
-      nfts: ['3'],
+      ips: [],
+      events: [],
+      services: [],
+      products: [],
       contents: [],
       equipment: [],
       instruments: [],
@@ -286,11 +285,10 @@ export const MOCK_ROSTER: RosterMember[] = [
     location: 'London, UK',
     verified: true,
     assets: {
-      ips: ['0'],
-      events: ['1'],
-      services: ['2'],
-      products: ['0'],
-      nfts: ['10'],
+      ips: [],
+      events: [],
+      services: [],
+      products: [],
       contents: [],
       equipment: [],
       instruments: [],
@@ -312,11 +310,10 @@ export const MOCK_ROSTER: RosterMember[] = [
     location: 'San Francisco, CA',
     verified: true,
     assets: {
-      ips: ['0'],
-      events: ['0'],
-      services: ['2'],
-      products: ['0'],
-      nfts: ['0'],
+      ips: [],
+      events: [],
+      services: [],
+      products: [],
       contents: [],
       equipment: [],
       instruments: [],
@@ -338,11 +335,10 @@ export const MOCK_ROSTER: RosterMember[] = [
     location: 'Decentralized',
     verified: true,
     assets: {
-      ips: ['0'],
-      events: ['0'],
-      services: ['2'],
-      products: ['0'],
-      nfts: ['0'],
+      ips: [],
+      events: [],
+      services: [],
+      products: [],
       contents: [],
       equipment: [],
       instruments: [],
@@ -364,11 +360,10 @@ export const MOCK_ROSTER: RosterMember[] = [
     location: 'Berlin, DE',
     verified: false,
     assets: {
-      ips: ['1'],
-      events: ['2'],
-      services: ['0'],
-      products: ['1'],
-      nfts: ['5'],
+      ips: [],
+      events: [],
+      services: [],
+      products: [],
       contents: [],
       equipment: [],
       instruments: [],
@@ -390,11 +385,10 @@ export const MOCK_ROSTER: RosterMember[] = [
     location: 'Mexico City, MX',
     verified: true,
     assets: {
-      ips: ['0'],
-      events: ['0'],
-      services: ['1'],
-      products: ['0'],
-      nfts: ['2'],
+      ips: [],
+      events: [],
+      services: [],
+      products: [],
       contents: [],
       equipment: [],
       instruments: [],
@@ -412,11 +406,10 @@ export const MOCK_ROSTER: RosterMember[] = [
     location: 'Global',
     verified: true,
     assets: {
-      ips: ['1'],
-      events: ['5'],
-      services: ['1'],
-      products: ['0'],
-      nfts: ['0'],
+      ips: [],
+      events: [],
+      services: [],
+      products: [],
       contents: [],
       equipment: [],
       instruments: [],
@@ -438,11 +431,10 @@ export const MOCK_ROSTER: RosterMember[] = [
     location: 'Paris, FR',
     verified: false,
     assets: {
-      ips: ['0'],
-      events: ['0'],
-      services: ['0'],
-      products: ['0'],
-      nfts: ['8'],
+      ips: [],
+      events: [],
+      services: [],
+      products: [],
       contents: [],
       equipment: [],
       instruments: [],
@@ -460,11 +452,10 @@ export const MOCK_ROSTER: RosterMember[] = [
     location: 'Amsterdam, NL',
     verified: true,
     assets: {
-      ips: ['0'],
-      events: ['3'],
-      services: ['2'],
-      products: ['0'],
-      nfts: ['1'],
+      ips: [],
+      events: [],
+      services: [],
+      products: [],
       contents: [],
       equipment: [],
       instruments: [],
@@ -486,11 +477,10 @@ export const MOCK_ROSTER: RosterMember[] = [
     location: 'New York, NY',
     verified: true,
     assets: {
-      ips: ['1'],
-      events: ['0'],
-      services: ['3'],
-      products: ['0'],
-      nfts: ['0'],
+      ips: [],
+      events: [],
+      services: [],
+      products: [],
       contents: [],
       equipment: [],
       instruments: [],
@@ -705,5 +695,68 @@ export const MOCK_TICKETS: SupportTicket[] = [
     tier: 'Tier 1',
     createdAt: '2023-10-14 09:00',
     lastUpdate: '2h ago',
+  },
+];
+
+export const MOCK_CONTRACTS: SmartContractDraft[] = [
+  {
+    id: 'scd-001',
+    contractType: 'Service Agreement',
+    content: `
+      // Standard Performance Agreement
+      // Parties:
+      // - Artist: Luna Eclipse
+      // - Venue: The Warehouse
+      
+      // Terms:
+      // - Date: 2024-12-15
+      // - Performance Time: 22:00 - 00:00
+      // - Fee: 1.5 ETH
+      // - Rider: Standard tech rider to be provided 2 weeks in advance.
+      // - Cancellation: 50% fee if cancelled by Venue within 30 days.
+      
+      `,
+    lastEditedBy: 'User',
+    version: 1,
+    status: 'Draft',
+  },
+  {
+    id: 'scd-002',
+    contractType: 'IERC-721',
+    content: `
+      // KalaKrut NFT Minter
+      // Token Name: Luna Eclipse - Genesis
+      // Symbol: LUNA-GEN
+      
+      // Metadata:
+      // - IPFS Hash: Qm...
+      // - Royalty: 10% on secondary sales
+      // - Total Supply: 100
+      
+      function mint(address to, uint256 tokenId) public {
+        // Minting logic...
+      }
+      `,
+    lastEditedBy: 'Admin',
+    version: 2,
+    status: 'Pending Review',
+  },
+  {
+    id: 'scd-003',
+    contractType: 'IERC-20',
+    content: `
+      // KalaKrut Artist Token
+      // Token Name: Luna Eclipse Fan Token
+      // Symbol: LUNA
+      
+      // Features:
+      // - Governance: Holders can vote on future projects.
+      // - Staking: Earn rewards for staking tokens.
+      // - Initial Supply: 1,000,000
+      
+      `,
+    lastEditedBy: 'User',
+    version: 1,
+    status: 'Draft',
   },
 ];

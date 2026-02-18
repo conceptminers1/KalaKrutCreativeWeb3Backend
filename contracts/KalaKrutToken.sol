@@ -14,7 +14,11 @@ import {Nonces} from "@openzeppelin/contracts/utils/Nonces.sol";
 contract KalaKrutToken is ERC20, Ownable, ERC20Permit, ERC20Votes {
     constructor(
         address initialOwner
-    ) ERC20("KalaKrut Token", "KKT") Ownable(initialOwner) ERC20Permit("KalaKrut Token") { }
+    )
+        ERC20("KalaKrut Token", "KKT")
+        Ownable(initialOwner)
+        ERC20Permit("KalaKrut Token") // This handles the EIP712 initialization
+    { }
 
     /**
      * @dev Mints new tokens. Can only be called by the contract owner.

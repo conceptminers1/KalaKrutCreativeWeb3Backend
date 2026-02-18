@@ -1,3 +1,4 @@
+
 export enum UserRole {
   ARTIST = 'Artist',
   VENUE = 'Venue',
@@ -7,7 +8,28 @@ export enum UserRole {
   ORGANIZER = 'Organizer',
   DAO_MEMBER = 'DAO Member',
   SERVICE_PROVIDER = 'Service Provider',
+  SYSTEM_ADMIN_LIVE = 'System Admin (Live)',
+  DAO_GOVERNOR = 'DAO Governor',
+  GUEST = 'Guest',
 }
+
+export enum ProposalStatus {
+  PENDING = 'Pending',
+  ACTIVE = 'Active',
+  CANCELED = 'Canceled',
+  DEFEATED = 'Defeated',
+  SUCCEEDED = 'Succeeded',
+  QUEUED = 'Queued',
+  EXPIRED = 'Expired',
+  EXECUTED = 'Executed',
+}
+
+export enum VoteType {
+  FOR = 'For',
+  AGAINST = 'Against',
+  ABSTAIN = 'Abstain',
+}
+
 
 export interface Artist {
   id: string;
@@ -67,6 +89,33 @@ export interface MarketplaceListing {
   price: number;
   currency: string;
   sellerId: string; // Links to an Artist/Producer node
+}
+
+export interface DAOProposal {
+    id: string; // proposalId
+    proposer: string; // address
+    title: string;
+    description: string;
+    status: ProposalStatus;
+    creationTimestamp: number;
+    startTimestamp: number;
+    endTimestamp: number;
+}
+
+export interface DAOVote {
+    id: string; // voter address + proposal id
+    proposalId: string;
+    voterAddress: string;
+    support: VoteType;
+    votingPower: number;
+    timestamp: number;
+}
+
+export interface DAODelegation {
+    id: string; // delegator address
+    delegatorAddress: string;
+    delegateeAddress: string;
+    timestamp: number;
 }
 
 // Edges

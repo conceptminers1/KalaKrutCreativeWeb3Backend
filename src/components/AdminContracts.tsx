@@ -1,434 +1,168 @@
-import React, { useState } from 'react';
-import {
-  FileSignature,
-  CheckCircle,
-  XCircle,
-  MessageSquare,
-  Search,
-  Filter,
-  ShieldCheck,
-  AlertTriangle,
-  Eye,
-  Edit,
-} from 'lucide-react';
-import { MOCK_PROPOSALS, MOCK_USERS_BY_ROLE } from '../mockData';
-import { UserRole, SmartContractDraft } from '../types';
-import ContractEditor from '../components/ContractEditor';
-import { useToast } from '../contexts/ToastContext';
+import { useState, useMemo, useEffect } from 'react';
+import { FileText, Briefcase, UserCheck, Shield, Award, Users } from 'lucide-react';
+import ContractFactory from './ContractFactory';
+import { UserRole } from '../types';
 
-interface AdminContract {
-  id: string;
-  title: string;
-  type: 'DAO Proposal' | 'Booking Contract' | 'Service Agreement';
-  proposerName: string;
-  proposerId: string; 
-  value: string;
-  status:
-    | 'Pending'
-    | 'Active'
-    | 'Ratified'
-    | 'Rejected'
-    | 'Negotiation'
-    | 'Pending Review';
-  date: string;
-  description: string;
-  contractData: SmartContractDraft;
-}
-
-const generateContractText = (title: string, type: string) => {
-  return `// SMART CONTRACT DRAFT: ${type.toUpperCase()}
-// TITLE: ${title}
-// DATE: ${new Date().toISOString()}
-
-pragma solidity ^0.8.0;
-
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
-contract Agreement {
-    address public admin;
-    address public beneficiary;
-    uint256 public value;
-    bool public isExecuted;
-
-    constructor(address _beneficiary, uint256 _value) {
-        admin = msg.sender;
-        beneficiary = _beneficiary;
-        value = _value;
-    }
-
-    function release() external {
-        require(msg.sender == admin, "Only Admin");
-    }
-}`;
+// --- All 9 Deployed Contract Addresses ---
+const DEPLOYED_CONTRACTS = {
+    KalaKrutToken: '0x67eeAedF8A791BB4e661959Bf2e5aa8ab2d12776',
+    TimelockController: '0xe9E5D4a9B223679eB86A0a913A8FafD3afD73C61',
+    KalaKrutGovernor: '0xDC304662539550251eD88467CE06E49F130C3E02',
+    Treasury: '0x2f567D9057530a161F7AFc27cEf655335995d535',
+    KalaKrutNFT: '0x369D9d5DD6706025C6F0376df9000C03e18daEE7',
+    EventTicket: '0x5dEA09497196D0A3E3676956e28Aa4c428313e8e',
+    Fractionalizer: '0x39b15Af3C4a222adDf69098149E02B965d40f9af',
+    Escrow: '0x9F9601e0288Ca1d23E5A16da9DC98032Cf045eb8',
+    ContractFactory: '0x98D039d6C8F4F04ac59d1dF2Cd80f408813C3810',
 };
 
-const INITIAL_CONTRACTS: AdminContract[] = [
-  ...MOCK_PROPOSALS.map((p) => ({
-    id: p.id,
-    title: p.title,
-    type: 'DAO Proposal' as const,
-    proposerName: p.creator,
-    proposerId: 'u_dao_member', // Corrected proposerId for mapping
-    value: 'N/A',
-    status: (p.status === 'Active'
-      ? 'Pending'
-      : p.status === 'Passed'
-        ? 'Ratified'
-        : 'Rejected') as AdminContract['status'],
-    date: p.deadline,
-    description: p.description,
-    contractData: {
-      id: `c-${p.id}`,
-      contractType: 'IERC-20' as const,
-      content: generateContractText(p.title, 'DAO Proposal'),
-      lastEditedBy: 'User' as const,
-      version: 1,
-      status: 'Pending Review' as const,
-    },
-  })),
-  {
-    id: 'CTR-2024-LV-01',
-    title: 'Leo Valdez - DAO Membership Agreement',
-    type: 'DAO Proposal',
-    proposerName: 'Leo Valdez',
-    proposerId: 'u_dao_member_leo',
-    value: '100 KALA',
-    status: 'Pending',
-    date: '2024-07-28',
-    description: 'Standard agreement for new DAO member Leo Valdez, outlining rights and responsibilities.',
-    contractData: {
-      id: 'c-CTR-2024-LV-01',
-      contractType: 'Service Agreement' as const,
-      content: generateContractText('Leo Valdez DAO Agreement', 'DAO Proposal'),
-      lastEditedBy: 'User' as const,
-      version: 1,
-      status: 'Pending Review' as const,
-    },
-  },
-  {
-    id: 'CTR-2023-881',
-    title: 'Summer Solstice - Headliner Agreement',
-    type: 'Booking Contract',
-    proposerName: 'The Warehouse',
-    proposerId: 'u_venue',
-    value: '5.5 ETH',
-    status: 'Pending',
-    date: '2023-10-25',
-    description:
-      'Performance contract for Neon Pulse including rider requirements and exclusivity clause.',
-    contractData: {
-      id: 'c-CTR-2023-881',
-      contractType: 'Service Agreement' as const,
-      content: generateContractText('Summer Solstice', 'Booking Contract'),
-      lastEditedBy: 'User' as const,
-      version: 1,
-      status: 'Pending Review' as const,
-    },
-  },
+type ContractName = keyof typeof DEPLOYED_CONTRACTS;
+
+// --- Role-Based Contract Visibility ---
+const CONTRACT_ACCESS_LEVELS: Record<string, ContractName[]> = {
+    ADMIN: Object.keys(DEPLOYED_CONTRACTS) as ContractName[],
+    SYSTEM_ADMIN_LIVE: Object.keys(DEPLOYED_CONTRACTS) as ContractName[],
+    DAO_GOVERNOR: Object.keys(DEPLOYED_CONTRACTS) as ContractName[],
+    DAO_MEMBER: ['KalaKrutGovernor', 'KalaKrutToken', 'TimelockController', 'Escrow', 'EventTicket', 'Fractionalizer', 'KalaKrutNFT'],
+    DEFAULT: ['Escrow', 'EventTicket', 'KalaKrutToken', 'KalaKrutNFT', 'Fractionalizer'], // For Artists, Talents, etc.
+};
+
+const mockContractListings = [
+    { id: 'C001', name: 'Artist Management Agreement #1024', type: 'Artist', status: 'Pending Review', assignedTo: 'ADMIN' },
+    { id: 'C002', name: 'DAO Proposal #42: New Marketing Budget', type: 'DAO', status: 'Voting Active', assignedTo: 'DAO_MEMBER' },
+    { id: 'C003', name: 'Venue Rental Agreement - Live Event', type: 'Vendor', status: 'Action Required: Payout', assignedTo: 'SYSTEM_ADMIN_LIVE' },
+    { id: 'C004', name: 'Treasury Payout to ArtistX', type: 'DAO', status: 'Queued in Timelock', assignedTo: 'DAO_GOVERNOR' },
+    { id: 'C005', name: 'Service Agreement - Sound Engineer', type: 'Vendor', status: 'Awaiting Signature', assignedTo: 'ADMIN' },
+    { id: 'C006', name: 'DAO Proposal #43: Update Bylaws', type: 'DAO', status: 'Defeated', assignedTo: 'DAO_GOVERNOR' },
 ];
 
 interface AdminContractsProps {
-  onChat: (name: string, avatar: string) => void;
-  onBlockUser: () => void;
   currentUserRole: UserRole;
-  currentUserName: string;
 }
 
-const AdminContracts: React.FC<AdminContractsProps> = ({
-  onChat,
-  onBlockUser,
-  currentUserRole,
-  currentUserName,
-}) => {
-  const { notify } = useToast();
-  const [contracts, setContracts] =
-    useState<AdminContract[]>(INITIAL_CONTRACTS);
-  const [filter, setFilter] = useState('All');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [editorOpen, setEditorOpen] = useState(false);
-  const [selectedContract, setSelectedContract] =
-    useState<AdminContract | null>(null);
+const AdminContracts: React.FC<AdminContractsProps> = ({ currentUserRole }) => {
+    const [activeTab, setActiveTab] = useState<'agreements' | 'factory'>('agreements');
 
-  const canGovern = 
-    currentUserRole === UserRole.ADMIN || 
-    currentUserRole === UserRole.SYSTEM_ADMIN_LIVE || 
-    currentUserRole === UserRole.DAO_GOVERNOR;
+    const visibleContracts = useMemo(() => {
+        const userRole = currentUserRole || 'DEFAULT';
+        const allowedKeys = CONTRACT_ACCESS_LEVELS[userRole] || CONTRACT_ACCESS_LEVELS.DEFAULT;
+        
+        return allowedKeys.reduce((acc, key) => {
+            if (DEPLOYED_CONTRACTS[key]) {
+                acc[key] = DEPLOYED_CONTRACTS[key];
+            }
+            return acc;
+        }, {} as Record<ContractName, string>);
+    }, [currentUserRole]);
 
-  const handleDecision = (id: string, decision: 'Ratify' | 'Reject') => {
-    if (!canGovern) {
-        notify('You do not have permission to perform this action.', 'error');
-        return;
-    }
-    setContracts((prev) =>
-      prev.map((c) => {
-        if (c.id === id) {
-          return {
-            ...c,
-            status: decision === 'Ratify' ? 'Ratified' : 'Rejected',
-          };
+    const [selectedContract, setSelectedContract] = useState<ContractName>(() => {
+        const firstVisible = Object.keys(visibleContracts)[0] as ContractName;
+        return firstVisible || 'KalaKrutToken';
+    });
+    
+    useEffect(() => {
+        const availableKeys = Object.keys(visibleContracts);
+        if (availableKeys.length > 0 && !availableKeys.includes(selectedContract)) {
+            setSelectedContract(availableKeys[0] as ContractName);
         }
-        return c;
-      })
-    );
-    notify(
-      `Contract ${id} has been ${decision === 'Ratify' ? 'Ratified' : 'Rejected'}.`,
-      decision === 'Ratify' ? 'success' : 'info'
-    );
-  };
+    }, [visibleContracts, selectedContract]);
 
-  const handleOpenEditor = (contract: AdminContract) => {
-    setSelectedContract(contract);
-    setEditorOpen(true);
-  };
+    const roleBasedActions = useMemo(() => {
+        if (!currentUserRole) return [];
+        const roles = {
+            ADMIN: () => mockContractListings.filter(c => c.assignedTo === 'ADMIN'),
+            SYSTEM_ADMIN_LIVE: () => mockContractListings.filter(c => c.assignedTo === 'SYSTEM_ADMIN_LIVE'),
+            DAO_GOVERNOR: () => mockContractListings.filter(c => c.type === 'DAO'),
+            DAO_MEMBER: () => mockContractListings.filter(c => c.assignedTo === 'DAO_MEMBER' && c.status === 'Voting Active'),
+        };
+        return roles[currentUserRole as keyof typeof roles] ? roles[currentUserRole as keyof typeof roles]() : [];
+    }, [currentUserRole]);
 
-  const handleEditorSave = (newContent: string) => {
-    if (selectedContract) {
-        const canEdit = canGovern || selectedContract.proposerName === currentUserName;
-        if (!canEdit) {
-            notify('You do not have permission to save changes to this contract.', 'error');
-            return;
-        }
-      setContracts((prev) =>
-        prev.map((c) =>
-          c.id === selectedContract.id
-            ? {
-                ...c,
-                contractData: {
-                  ...c.contractData,
-                  content: newContent,
-                  lastEditedBy: currentUserName as 'Admin' | 'User',
-                  version: c.contractData.version + 1,
-                },
-              }
-            : c
-        )
-      );
-      notify('Contract draft saved.', 'info');
-    }
-  };
+    const renderRoleIcon = (role: string) => {
+        const icons = {
+            ADMIN: <UserCheck className="w-4 h-4 text-blue-400" />,
+            SYSTEM_ADMIN_LIVE: <Shield className="w-4 h-4 text-red-400" />,
+            DAO_GOVERNOR: <Award className="w-4 h-4 text-amber-400" />,
+            DAO_MEMBER: <Users className="w-4 h-4 text-green-400" />,
+        };
+        return icons[role as keyof typeof icons] || null;
+    };
 
-  const handleEditorStatusChange = (status: any, notes?: string) => {
-    if (!canGovern) {
-        notify('Only Admins or Governors can change contract status.', 'error');
-        return;
-    }
-    if (selectedContract) {
-      setContracts((prev) =>
-        prev.map((c) =>
-          c.id === selectedContract.id
-            ? {
-                ...c,
-                status:
-                  status === 'Active'
-                    ? 'Ratified'
-                    : status === 'Negotiation'
-                      ? 'Pending'
-                      : 'Rejected',
-                contractData: {
-                  ...c.contractData,
-                  status: status,
-                  adminNotes: notes,
-                },
-              }
-            : c
-        )
-      );
-      notify(`Contract status updated to: ${status}`, 'success');
-    }
-  };
-
-  const initiateChat = (contract: AdminContract) => {
-    let avatar = 'https://picsum.photos/seed/generic/50';
-    const mockUser = Object.values(MOCK_USERS_BY_ROLE).find(
-      (u) => u.name === contract.proposerName
-    );
-    if (mockUser) avatar = mockUser.avatar;
-    onChat(contract.proposerName, avatar);
-  };
-
-  const filteredContracts = contracts.filter((c) => {
-    const matchesFilter =
-      filter === 'All' ||
-      c.status === filter ||
-      (filter === 'Pending' && c.status === 'Negotiation');
-    const matchesSearch =
-      c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.proposerName.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesFilter && matchesSearch;
-  });
-
-  return (
-    <div className="space-y-6 animate-in fade-in">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-            <FileSignature className="text-kala-secondary" /> Contracts &
-            Agreements
-          </h2>
-          <p className="text-kala-400 text-sm">
-            {canGovern ? 'Administer, ratify, or reject all organization contracts.' : 'View and manage your contracts.'}
-          </p>
-        </div>
-
-        <div className="flex gap-2 bg-kala-800 p-1 rounded-lg border border-kala-700">
-          {['All', 'Pending', 'Ratified', 'Rejected'].map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-3 py-1.5 rounded text-xs font-bold transition-colors ${
-                filter === f
-                  ? 'bg-kala-secondary text-kala-900'
-                  : 'text-kala-400 hover:text-white'
-              }`}
-            >
-              {f}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="relative">
-        <Search className="absolute left-3 top-3 w-4 h-4 text-kala-500" />
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search by Contract ID, Title, or Proposer..."
-          className="w-full bg-kala-800/50 border border-kala-700 rounded-xl pl-10 pr-4 py-3 text-white outline-none focus:border-kala-secondary"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 gap-4">
-        {filteredContracts.map((contract) => {
-          const canEditContract = canGovern || contract.proposerName === currentUserName;
-          return (
-          <div
-            key={contract.id}
-            className="bg-kala-800/50 border border-kala-700 rounded-xl p-6 hover:border-kala-500 transition-all group"
-          >
-            <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <span
-                    className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${
-                      contract.type === 'DAO Proposal'
-                        ? 'bg-purple-500/10 text-purple-400 border-purple-500/20'
-                        : contract.type === 'Booking Contract'
-                          ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                          : 'bg-orange-500/10 text-orange-400 border-orange-500/20'
-                    }`}
-                  >
-                    {contract.type}
-                  </span>
-                  <span className="text-xs text-kala-500 font-mono">
-                    {contract.id}
-                  </span>
-                  <span className="text-xs text-kala-500">
-                    • {contract.date}
-                  </span>
+    const AgreementsPage = (
+        <div className="bg-kala-900 border border-kala-700 rounded-2xl p-6 lg:p-8 shadow-2xl shadow-kala-950/50">
+            <div className="flex items-center gap-4 mb-8">
+                <Briefcase className="w-8 h-8 text-kala-secondary" />
+                <div>
+                    <h2 className="text-2xl font-bold text-white">Contracts & Agreements</h2>
+                    <p className="text-kala-400">Manage, review, and interact with all organizational contracts.</p>
                 </div>
-
-                <h3 className="text-xl font-bold text-white mb-2">
-                  {contract.title}
-                </h3>
-                <p className="text-sm text-kala-300 mb-4 max-w-2xl">
-                  {contract.description}
-                </p>
-
-                <div className="flex items-center gap-6 text-sm">
-                  <div className="flex items-center gap-2">
-                    <span className="text-kala-500">Proposer:</span>
-                    <span className="text-white font-medium">
-                      {contract.proposerName}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-kala-500">Value:</span>
-                    <span className="text-kala-secondary font-mono font-bold">
-                      {contract.value}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-col items-end gap-3 min-w-[140px]">
-                <div
-                  className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 border ${
-                    contract.status === 'Ratified'
-                      ? 'bg-green-500/10 text-green-400 border-green-500/20'
-                      : contract.status === 'Rejected'
-                        ? 'bg-red-500/10 text-red-400 border-red-500/20'
-                        : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
-                  }`}
-                >
-                  {contract.status === 'Ratified' && (
-                    <ShieldCheck className="w-3 h-3" />
-                  )}
-                  {contract.status === 'Rejected' && (
-                    <AlertTriangle className="w-3 h-3" />
-                  )}
-                  {(contract.status === 'Pending' ||
-                    contract.status === 'Negotiation') && (
-                    <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
-                  )}
-                  {contract.status.toUpperCase()}
-                </div>
-
-                <div className="flex gap-2 mt-2">
-                  <button
-                    onClick={() => handleOpenEditor(contract)}
-                    className="p-2 bg-kala-800 text-kala-300 rounded-lg hover:bg-kala-700 hover:text-white transition-colors border border-kala-700"
-                    title={canEditContract ? "Edit Contract" : "View Contract"}
-                  >
-                    {canEditContract ? <Edit className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-
-                  <button
-                    onClick={() => initiateChat(contract)}
-                    className="p-2 bg-kala-800 text-blue-400 rounded-lg hover:bg-blue-600 hover:text-white transition-colors border border-kala-700 hover:border-blue-500"
-                    title="Contact Proposer"
-                  >
-                    <MessageSquare className="w-4 h-4" />
-                  </button>
-
-                  {canGovern && (contract.status === 'Pending' ||
-                    contract.status === 'Negotiation') && (
-                    <>
-                      <button
-                        onClick={() => handleDecision(contract.id, 'Reject')}
-                        className="p-2 bg-kala-800 text-red-400 rounded-lg hover:bg-red-600 hover:text-white transition-colors border border-kala-700 hover:border-red-500"
-                        title="Reject / Veto"
-                      >
-                        <XCircle className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDecision(contract.id, 'Ratify')}
-                        className="p-2 bg-kala-800 text-green-400 rounded-lg hover:bg-green-600 hover:text-white transition-colors border border-kala-700 hover:border-green-500"
-                        title="Ratify / Allow"
-                      >
-                        <CheckCircle className="w-4 h-4" />
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
             </div>
-          </div>
-        )})
-      }</div>
 
-      {editorOpen && selectedContract && (
-        <ContractEditor
-          contract={selectedContract.contractData}
-          userRole={currentUserRole}
-          onClose={() => setEditorOpen(false)}
-          onSave={handleEditorSave}
-          onStatusChange={handleEditorStatusChange}
-          onBlockUser={onBlockUser}
-          isReadOnly={!canGovern && selectedContract.proposerName !== currentUserName}        />
-      )}
-    </div>
-  );
+            <div className='mb-8'>
+                <label htmlFor="contractSelect" className="block text-sm font-medium text-kala-300 mb-2">View a Deployed Smart Contract</label>
+                <select
+                    id="contractSelect"
+                    value={selectedContract}
+                    onChange={(e) => setSelectedContract(e.target.value as ContractName)}
+                    className="w-full bg-kala-800 border border-kala-600 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-kala-secondary focus:border-kala-secondary transition"
+                >
+                    {Object.keys(visibleContracts).map(name => (
+                        <option key={name} value={name}>{name.replace(/([A-Z])/g, ' $1').trim()}</option>
+                    ))}
+                </select>
+                <div className='mt-2 text-xs text-mono text-kala-500'>
+                    Address: {visibleContracts[selectedContract]}
+                </div>
+            </div>
+            
+            <div>
+                <h3 className="text-xl font-semibold text-white mb-4">Your Action Items</h3>
+                {roleBasedActions.length > 0 ? (
+                    <ul className="space-y-3">
+                        {roleBasedActions.map(contract => (
+                            <li key={contract.id} className="bg-kala-800/70 p-4 rounded-lg flex justify-between items-center hover:bg-kala-800 transition cursor-pointer">
+                                <div className='flex items-center gap-4'>
+                                    <FileText className="w-6 h-6 text-kala-400" />
+                                    <div>
+                                        <p className='font-bold text-white'>{contract.name}</p>
+                                        <p className='text-sm text-kala-300'>Status: <span className='font-semibold text-amber-400'>{contract.status}</span></p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm text-kala-400" title={`Assigned to: ${contract.assignedTo}`}>
+                                    {renderRoleIcon(contract.assignedTo)}
+                                    <span>{contract.assignedTo.replace('_', ' ')}</span>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <div className='text-center py-8 px-4 border-2 border-dashed border-kala-700 rounded-lg'>
+                        <p className='text-kala-400'>You have no pending contract actions based on your role.</p>
+                        <p className='text-sm text-kala-500 mt-1'>Your current role: {currentUserRole}</p>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+
+    return (
+        <div className="space-y-8">
+            <div className="flex border-b border-kala-700">
+                <button 
+                    onClick={() => setActiveTab('agreements')}
+                    className={`px-6 py-3 text-lg font-semibold transition ${activeTab === 'agreements' ? 'text-white border-b-2 border-kala-secondary' : 'text-kala-400 hover:text-white'}`}>
+                    Contracts & Agreements
+                </button>
+                <button 
+                    onClick={() => setActiveTab('factory')}
+                    className={`px-6 py-3 text-lg font-semibold transition ${activeTab === 'factory' ? 'text-white border-b-2 border-kala-secondary' : 'text-kala-400 hover:text-white'}`}>
+                    Contract Factory
+                </button>
+            </div>
+
+            {activeTab === 'agreements' ? AgreementsPage : <ContractFactory currentUserRole={currentUserRole} />}
+        </div>
+    );
 };
 
 export default AdminContracts;
