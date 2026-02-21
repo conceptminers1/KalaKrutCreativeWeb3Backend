@@ -264,7 +264,9 @@ const Home: React.FC<HomeProps> = ({ onLogin, onViewNews, onJoin, isLoggingIn })
         <div className="max-w-4xl mx-auto px-6 pt-16 pb-16 text-center">
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
             The Future of{' '}
-            <span className="text-kala-secondary">Creative Business</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-kala-secondary to-purple-500">
+              Creative Business
+            </span>
           </h1>
           <p className="text-xl text-kala-300 mb-10 max-w-2xl mx-auto">
             A hybrid social enterprise and gamified community portal. We connect
