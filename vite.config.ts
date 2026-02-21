@@ -1,28 +1,26 @@
-
-import path from 'path';
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite'; // Import the plugin
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, '.', '');
-  return {
-    base: '/',
-    server: {
-      port: 3000,
-      host: '0.0.0.0',
+export default defineConfig({
+  plugins: [
+    react(),
+    tailwindcss(), // Add Tailwind to the build pipeline
+    nodePolyfills()
+  ],
+  server: {
+    host: true,
+    port: 3000,
+    strictPort: true,
+    hmr: {
+      clientPort: 443,
     },
-    plugins: [react()],
-    optimizeDeps: {
-        include: ['ethers'],
+    // Required for Coinbase Smart Wallet popups
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+      'Cross-Origin-Embedder-Policy': 'credentialless',
     },
-    define: {
-      'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-    },
-    resolve: {
-      alias: {
-        '@': path.resolve(__dirname, '.'),
-      },
-    },
-  };
+    allowedHosts: ['.cloudworkstations.dev'],
+  },
 });

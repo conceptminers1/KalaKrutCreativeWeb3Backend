@@ -1,21 +1,22 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { useData } from '../contexts/DataContext';
 import { useToast } from '../contexts/ToastContext';
 import { ArtistProfile, ApprovalStatus } from '../types';
+import AdminJoinRequests from './AdminJoinRequests'; // Import the new component
 
 const AdminReview: React.FC = () => {
   const { leads, updateUser, addNotification } = useData();
   const { showToast } = useToast();
+  const [currentTab, setCurrentTab] = useState('leads'); // State to manage tabs
 
   const handleApprove = (lead: ArtistProfile) => {
     updateUser({ ...lead, status: ApprovalStatus.APPROVED });
-
     addNotification({
       userId: lead.id,
       message: `Congratulations, ${lead.name}! Your application is approved. Welcome!`,
       type: 'success',
     });
-
     showToast(`Approved ${lead.name}. They are now a roster member.`, 'success');
     
     console.log('--- SIMULATED WELCOME EMAIL ---');
@@ -27,17 +28,14 @@ const AdminReview: React.FC = () => {
 
   const handleDeny = (lead: ArtistProfile) => {
     if (window.confirm(`Are you sure you want to deny the application for ${lead.name}?`)) {
-      
       updateUser({ ...lead, status: ApprovalStatus.REJECTED });
-
       addNotification({
         userId: lead.id, 
         message: `We regret to inform you that your application as '${lead.name}' will not be moving forward at this time.`,
         type: 'error',
       });
-
       showToast(`Denied application for ${lead.name}.`, 'warning');
-
+      
       console.log('--- SIMULATED REJECTION EMAIL ---');
       console.log(`To: ${lead.email}`);
       console.log(`Subject: An Update on Your KalaKrut Application`);
@@ -59,13 +57,9 @@ const AdminReview: React.FC = () => {
     }
   };
 
-  return (
-    <div className="bg-kala-800/50 border border-kala-700 rounded-xl overflow-hidden">
-      <div className="p-4 bg-kala-900/50 border-b border-kala-700">
-        <h3 className="font-bold text-white">Artist Join Requests</h3>
-      </div>
-      <div className="overflow-x-auto">
-        {leads.length > 0 ? (
+  const LeadsView = () => (
+    <>
+     {leads.length > 0 ? (
           <table className="w-full text-left text-sm">
             <thead className="bg-kala-800 text-kala-400 text-xs uppercase font-bold">
               <tr>
@@ -111,6 +105,30 @@ const AdminReview: React.FC = () => {
             <p className="text-kala-400 mt-1">When a new artist submits a join request, it will appear here for your review.</p>
           </div>
         )}
+    </>
+  );
+
+  return (
+    <div className="bg-kala-800/50 border border-kala-700 rounded-xl overflow-hidden">
+      <div className="p-4 bg-kala-900/50 border-b border-kala-700">
+          <div className="flex items-center justify-between">
+              <h3 className="font-bold text-white">Artist Onboarding</h3>
+              <div className="flex items-center space-x-2 bg-kala-800 p-1 rounded-lg">
+                  <button 
+                      onClick={() => setCurrentTab('leads')} 
+                      className={`px-3 py-1 text-sm font-bold rounded-md ${currentTab === 'leads' ? 'bg-kala-secondary text-kala-900' : 'text-kala-300 hover:bg-kala-700'}`}>
+                      Leads
+                  </button>
+                  <button 
+                      onClick={() => setCurrentTab('requests')} 
+                      className={`px-3 py-1 text-sm font-bold rounded-md ${currentTab === 'requests' ? 'bg-kala-secondary text-kala-900' : 'text-kala-300 hover:bg-kala-700'}`}>
+                      Join Requests
+                  </button>
+              </div>
+          </div>
+      </div>
+      <div className="overflow-x-auto">
+        {currentTab === 'leads' ? <LeadsView /> : <AdminJoinRequests />}
       </div>
     </div>
   );

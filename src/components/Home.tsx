@@ -33,6 +33,7 @@ interface HomeProps {
   onLogin: (role: UserRole, method: 'web2' | 'web3', credentials?: any) => void;
   onViewNews: () => void;
   onJoin: () => void;
+  isLoggingIn: boolean;
 }
 
 const KalaKrutLogo = ({ className = 'w-32 h-32' }: { className?: string }) => (
@@ -162,14 +163,13 @@ const LinktreeIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const Home: React.FC<HomeProps> = ({ onLogin, onViewNews, onJoin }) => {
+const Home: React.FC<HomeProps> = ({ onLogin, onViewNews, onJoin, isLoggingIn }) => {
   const { notify } = useToast();
   const { users, stats, setDemoMode, isDemoMode, demoModeAvailable } =
     useData();
   const [isPending, startTransition] = useTransition();
   const [selectedRoleForLogin, setSelectedRoleForLogin] =
     useState<UserRole | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [showMembersPreview, setShowMembersPreview] = useState(false);
 
   // Login Form State for Live Mode
@@ -201,10 +201,7 @@ const Home: React.FC<HomeProps> = ({ onLogin, onViewNews, onJoin }) => {
       // Using startTransition to prevent suspension errors during view swaps
       startTransition(() => {
         setDemoMode(loginMode === 'demo');
-        setTimeout(() => {
-          onLogin(selectedRoleForLogin, method, { email, password });
-          setIsLoading(false);
-        }, 500);
+        onLogin(selectedRoleForLogin, method, { email, password });
       });
     }
   };
@@ -267,9 +264,7 @@ const Home: React.FC<HomeProps> = ({ onLogin, onViewNews, onJoin }) => {
         <div className="max-w-4xl mx-auto px-6 pt-16 pb-16 text-center">
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
             The Future of{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-kala-secondary to-purple-500">
-              Creative Business
-            </span>
+            <span className="text-kala-secondary">Creative Business</span>
           </h1>
           <p className="text-xl text-kala-300 mb-10 max-w-2xl mx-auto">
             A hybrid social enterprise and gamified community portal. We connect
@@ -381,7 +376,7 @@ const Home: React.FC<HomeProps> = ({ onLogin, onViewNews, onJoin }) => {
               <span>
                 To Join: Click the{' '}
                 <span className="text-white font-bold bg-blue-500/20 px-1 rounded border border-blue-500/30">
-                  Preview
+                  Join
                 </span>{' '}
                 button on the "Active Members" chart below.
               </span>
@@ -399,7 +394,7 @@ const Home: React.FC<HomeProps> = ({ onLogin, onViewNews, onJoin }) => {
                   <Users className="w-6 h-6" />
                 </div>
                 <div className="text-xs font-bold text-blue-400 bg-blue-500/10 px-2 py-1 rounded-full flex items-center gap-1 border border-blue-500/20 hover:bg-blue-500 hover:text-white transition-colors shadow-sm">
-                  <Eye className="w-3 h-3" /> Preview
+                  <Eye className="w-3 h-3" /> Join
                 </div>
               </div>
               <div className="text-4xl font-bold text-white mb-1 tracking-tight relative z-10">
@@ -610,9 +605,9 @@ const Home: React.FC<HomeProps> = ({ onLogin, onViewNews, onJoin }) => {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in">
           <div className="bg-kala-900 border border-kala-700 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl relative">
             <button
-              onClick={() => !isLoading && setSelectedRoleForLogin(null)}
+              onClick={() => !isLoggingIn && setSelectedRoleForLogin(null)}
               className="absolute top-4 right-4 text-kala-500 hover:text-white disabled:opacity-50"
-              disabled={isLoading}
+              disabled={isLoggingIn}
             >
               <X className="w-6 h-6" />
             </button>
@@ -684,10 +679,10 @@ const Home: React.FC<HomeProps> = ({ onLogin, onViewNews, onJoin }) => {
                 </p>
                 <button
                   onClick={() => handleLoginClick('web3')}
-                  disabled={isLoading}
+                  disabled={isLoggingIn}
                   className="w-full py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
                 >
-                  {isLoading ? (
+                  {isLoggingIn ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
                     'Connect Wallet'
@@ -736,10 +731,10 @@ const Home: React.FC<HomeProps> = ({ onLogin, onViewNews, onJoin }) => {
                     )}
                     <button
                       onClick={() => handleLoginClick('web2')}
-                      disabled={isLoading}
+                      disabled={isLoggingIn}
                       className="w-full py-2 bg-kala-secondary hover:bg-cyan-400 text-kala-900 font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
                     >
-                      {isLoading ? (
+                      {isLoggingIn ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
                         'Sign In'
@@ -754,10 +749,10 @@ const Home: React.FC<HomeProps> = ({ onLogin, onViewNews, onJoin }) => {
                     </div>
                     <button
                       onClick={() => handleLoginClick('web2')}
-                      disabled={isLoading}
+                      disabled={isLoggingIn}
                       className="w-full py-2 bg-kala-secondary hover:bg-cyan-400 text-kala-900 font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
                     >
-                      {isLoading ? (
+                      {isLoggingIn ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
                         `Enter as ${selectedRoleForLogin} (Demo)`

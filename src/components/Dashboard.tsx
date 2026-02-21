@@ -66,7 +66,7 @@ const ActionCard = ({ icon, title, subtitle, onClick }: any) => (
 );
 
 const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
-  const { isConnected, connect, walletAddress } = useWallet();
+  const { isConnected, open, address } = useWallet();
 
   return (
     <div className="space-y-8 animate-in fade-in">
@@ -86,7 +86,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
           </button>
           {!isConnected ? (
             <button
-              onClick={connect}
+              onClick={open}
               className="flex items-center gap-2 px-4 py-2 rounded-lg bg-kala-secondary text-kala-900 font-bold hover:bg-cyan-400 transition-colors"
             >
               <WalletIcon className="w-5 h-5" />
@@ -94,7 +94,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
             </button>
           ) : (
             <div className="text-sm font-mono bg-kala-800/50 border border-kala-700 rounded-lg px-3 py-2 text-white">
-              {`${walletAddress.substring(0, 6)}...${walletAddress.substring(walletAddress.length - 4)}`}
+              {address && `${address.substring(0, 6)}...${address.substring(address.length - 4)}`}
             </div>
           )}
           <div

@@ -56,7 +56,22 @@ model ArtistProfile {
   updatedAt     DateTime @updatedAt
 }
 
-// --- ORIGINAL MODELS (UNCHANGED) ---
+// --- NEW MODEL FOR ONBOARDING ---
+model JoinRequest {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String?
+  walletAddress String?
+  bio           String?
+  location      String?
+  musicBrainzId String?
+  status        String   @default("PENDING") // PENDING, APPROVED, DENIED
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+
+// --- ORIGINAL MODELS (PRESERVED) ---
 model Session {
   id             String    @id @default(cuid())
   sessionToken   String    @unique
@@ -129,7 +144,7 @@ model Metrics {
 }
 
 
-// --- NEW MODELS FOR KALAKRUT PLATFORM ---
+// --- KALAKRUT PLATFORM MODELS ---
 
 // Core DAO Contracts
 model KalaKrutToken {

@@ -699,64 +699,134 @@ export const MOCK_TICKETS: SupportTicket[] = [
 ];
 
 export const MOCK_CONTRACTS: SmartContractDraft[] = [
-  {
-    id: 'scd-001',
-    contractType: 'Service Agreement',
-    content: `
-      // Standard Performance Agreement
-      // Parties:
-      // - Artist: Luna Eclipse
-      // - Venue: The Warehouse
-      
-      // Terms:
-      // - Date: 2024-12-15
-      // - Performance Time: 22:00 - 00:00
-      // - Fee: 1.5 ETH
-      // - Rider: Standard tech rider to be provided 2 weeks in advance.
-      // - Cancellation: 50% fee if cancelled by Venue within 30 days.
-      
-      `,
-    lastEditedBy: 'User',
-    version: 1,
-    status: 'Draft',
-  },
-  {
-    id: 'scd-002',
-    contractType: 'IERC-721',
-    content: `
-      // KalaKrut NFT Minter
-      // Token Name: Luna Eclipse - Genesis
-      // Symbol: LUNA-GEN
-      
-      // Metadata:
-      // - IPFS Hash: Qm...
-      // - Royalty: 10% on secondary sales
-      // - Total Supply: 100
-      
-      function mint(address to, uint256 tokenId) public {
-        // Minting logic...
-      }
-      `,
-    lastEditedBy: 'Admin',
-    version: 2,
-    status: 'Pending Review',
-  },
-  {
-    id: 'scd-003',
-    contractType: 'IERC-20',
-    content: `
-      // KalaKrut Artist Token
-      // Token Name: Luna Eclipse Fan Token
-      // Symbol: LUNA
-      
-      // Features:
-      // - Governance: Holders can vote on future projects.
-      // - Staking: Earn rewards for staking tokens.
-      // - Initial Supply: 1,000,000
-      
-      `,
-    lastEditedBy: 'User',
-    version: 1,
-    status: 'Draft',
-  },
+    {
+        id: 'scd-001',
+        contractType: 'KalaKrutToken',
+        content: `contract KalaKrutToken is ERC20 {
+    constructor() ERC20("KalaKrut Token", "KALA") {
+        _mint(msg.sender, 1000000 * 10 ** 18);
+    }
+}`,
+        lastEditedBy: 'Admin',
+        version: 1,
+        status: 'Published',
+        parameters: [],
+    },
+    {
+        id: 'scd-002',
+        contractType: 'TimelockController',
+        content: `contract TimelockController is TimelockController {
+    constructor(uint256 minDelay, address[] memory proposers, address[] memory executors) 
+        TimelockController(minDelay, proposers, executors, msg.sender) {}
+}`,
+        lastEditedBy: 'Admin',
+        version: 1,
+        status: 'Published',
+        parameters: ['minDelay', 'proposers', 'executors'],
+    },
+    {
+        id: 'scd-003',
+        contractType: 'KalaKrutGovernor',
+        content: `contract KalaKrutGovernor is Governor, GovernorVotes, GovernorVotesQuorumFraction, GovernorTimelockControl {
+    constructor(IVotes _token, TimelockController _timelock)
+        Governor(ERC20Votes.getPastTotalSupply, "KalaKrutGovernor")
+        GovernorVotes(_token)
+        GovernorVotesQuorumFraction(4)
+        GovernorTimelockControl(_timelock) {}
+}`,
+        lastEditedBy: 'Admin',
+        version: 1,
+        status: 'Published',
+        parameters: ['tokenAddress', 'timelockAddress'],
+    },
+    {
+        id: 'scd-004',
+        contractType: 'Treasury',
+        content: `contract Treasury {
+    address public owner;
+    constructor() {
+        owner = msg.sender;
+    }
+    // Additional treasury logic here
+}`,
+        lastEditedBy: 'Admin',
+        version: 1,
+        status: 'Published',
+        parameters: [],
+    },
+    {
+        id: 'scd-005',
+        contractType: 'KalaKrutNFT',
+        content: `contract KalaKrutNFT is ERC721, Ownable {
+    constructor(string memory name, string memory symbol) ERC721(name, symbol) {}
+}`,
+        lastEditedBy: 'Admin',
+        version: 1,
+        status: 'Published',
+        parameters: ['nftName', 'nftSymbol'],
+    },
+    {
+        id: 'scd-006',
+        contractType: 'EventTicket',
+        content: `contract EventTicket is ERC721, Ownable {
+    constructor(string memory uri) ERC721("EventTicket", "EVT") {
+        _safeMint(msg.sender, 1, uri);
+    }
+}`,
+        lastEditedBy: 'Admin',
+        version: 1,
+        status: 'Published',
+        parameters: ['eventUri'],
+    },
+    {
+        id: 'scd-007',
+        contractType: 'Fractionalizer',
+        content: `contract Fractionalizer is ERC20, Ownable {
+    constructor(string memory name, string memory symbol, address nftContract, uint256 nftId, uint256 totalSupply)
+        ERC20(name, symbol) {
+        // Logic to fractionalize the NFT
+    }
+}`,
+        lastEditedBy: 'Admin',
+        version: 1,
+        status: 'Published',
+        parameters: ['fractionalizerName', 'fractionalizerSymbol', 'nftContractAddress', 'nftId', 'totalSupply'],
+    },
+    {
+        id: 'scd-008',
+        contractType: 'Escrow',
+        content: `contract Escrow {
+    address public beneficiary;
+    address public arbiter;
+    constructor(address _beneficiary, address _arbiter) {
+        beneficiary = _beneficiary;
+        arbiter = _arbiter;
+    }
+}`,
+        lastEditedBy: 'Admin',
+        version: 1,
+        status: 'Published',
+        parameters: ['beneficiary', 'arbiter'],
+    },
+    {
+        id: 'scd-009',
+        contractType: 'ServiceAgreement',
+        content: `contract ServiceAgreement is ReentrancyGuard {
+    address public provider; // The address of the service provider
+    address public client;   // The address of the client
+    address public arbiter;  // The address of the arbiter for dispute resolution
+
+    uint256 public paymentAmount; // The agreed payment amount in wei
+    string public terms;          // The terms of the service agreement
+
+    enum State { Created, Funded, Completed, Cancelled, InDispute }
+    State public currentState;
+
+    // ... (rest of the contract code) ...
+}`,
+        lastEditedBy: 'Admin',
+        version: 1,
+        status: 'Published',
+        parameters: ['provider', 'client', 'arbiter', 'terms', 'paymentAmount'],
+    },
 ];

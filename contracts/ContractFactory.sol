@@ -5,7 +5,7 @@ pragma solidity ^0.8.20;
 // Base contract
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
-// Import all 8 contracts to be created by the factory
+// Import all 9 contracts to be created by the factory
 import "./KalaKrutToken.sol";
 import "@openzeppelin/contracts/governance/TimelockController.sol";
 import "./KalaKrutGovernor.sol";
@@ -14,6 +14,7 @@ import "./KalaKrutNFT.sol";
 import "./EventTicket.sol";
 import "./Fractionalizer.sol";
 import "./Escrow.sol";
+import "./ServiceAgreement.sol";
 
 // Interfaces needed for casting
 import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
@@ -55,10 +56,8 @@ contract ContractFactory is AccessControl {
     // 3. Create KalaKrutGovernor
     function createGovernor(
         address _token,
-        // CORRECTED: Changed address to address payable
         address payable _timelock 
     ) public onlyRole(CREATOR_ROLE) returns (address) {
-        // Cast addresses to the required contract types
         KalaKrutGovernor newGovernor = new KalaKrutGovernor(IVotes(_token), TimelockController(_timelock));
         emit ContractCreated(address(newGovernor), msg.sender, "KalaKrutGovernor", block.timestamp);
         return address(newGovernor);
@@ -118,5 +117,17 @@ contract ContractFactory is AccessControl {
         Escrow newEscrow = new Escrow(payable(msg.sender), _beneficiary, _arbiter);
         emit ContractCreated(address(newEscrow), msg.sender, "Escrow", block.timestamp);
         return address(newEscrow);
+    }
+
+    // 9. Create ServiceAgreement
+    function createServiceAgreement(
+        address provider,
+        address client,
+        address arbiter,
+        string memory terms
+    ) public payable onlyRole(CREATOR_ROLE) returns (address) {
+        ServiceAgreement newAgreement = new ServiceAgreement{value: msg.value}(provider, client, arbiter, terms);
+        emit ContractCreated(address(newAgreement), msg.sender, "ServiceAgreement", block.timestamp);
+        return address(newAgreement);
     }
 }

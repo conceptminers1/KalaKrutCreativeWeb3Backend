@@ -1,27 +1,57 @@
-
-# Dependencies
-/node_modules
-
-# Build output
-/dist
-/build
-
 # Logs
 logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
 # Environment variables
 .env
+.env.development
+.env.test
+.env.production
 
-# Hardhat
-/artifacts
-/cache
+# NEXT.js
+.next/
+out/
 
-# Prisma
-/server/prisma/tmp
+# Nuxt.js
+.nuxt/
+dist/
 
-# Other
-/public/project-backup.tar.gz
+# Gatsby.js
+.cache/
+public/
+
+# SvelteKit
+.svelte-kit/
+
+# Docusaurus
+.docusaurus/
+
+# Firebase
+.firebase/
+firebase.json
+database.rules.json
+storage.rules
+
+#testing
+coverage

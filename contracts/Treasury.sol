@@ -7,7 +7,7 @@ pragma solidity ^0.8.24;
  * the designated owner (the Governor contract) to withdraw them.
  */
 contract Treasury {
-    address public owner;
+    address payable public owner;
 
     event FundsDeposited(address from, uint256 amount);
     event FundsWithdrawn(address to, uint256 amount);
@@ -17,7 +17,7 @@ contract Treasury {
         _;
     }
 
-    constructor(address _owner) {
+    constructor(address payable _owner) {
         owner = _owner;
     }
 

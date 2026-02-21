@@ -1,6 +1,8 @@
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import { WalletProvider } from './contexts/WalletContext'; // <-- Import the provider
 import './index.css';
 
 const rootElement = document.getElementById('root');
@@ -9,12 +11,17 @@ if (!rootElement) {
 }
 
 const root = ReactDOM.createRoot(rootElement);
+
+// Wrap the App with the WalletProvider
 root.render(
   <React.StrictMode>
-    <App />
+    <WalletProvider>
+      <App />
+    </WalletProvider>
   </React.StrictMode>
 );
 
+// Optional: Service Worker Registration
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').then(registration => {

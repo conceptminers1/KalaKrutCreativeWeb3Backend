@@ -2,15 +2,7 @@
 import React, { useState, useEffect, Suspense, useTransition } from 'react';
 import Layout from './components/Layout';
 import Home from './components/Home';
-import Announcements from './components/Announcements';
-import ChatOverlay from './components/ChatOverlay';
-import WalletHistory from './components/WalletHistory';
-import SearchResults from './components/SearchResults';
-import Sitemap from './components/Sitemap';
-import SystemDiagrams from './components/SystemDiagrams';
-import WhitePaper from './components/WhitePaper';
-import TokenExchange from './components/TokenExchange';
-import { Web3Provider } from './contexts/Web3Context';
+import Dashboard from './components/Dashboard';
 import { WalletProvider, useWallet } from './contexts/WalletContext';
 import { ToastProvider, useToast } from './contexts/ToastContext';
 import { DataProvider, useData } from './contexts/DataContext';
@@ -47,9 +39,16 @@ import {
   MOCK_USERS_BY_ROLE,
   MOCK_MODERATION_CASES,
 } from './mockData';
-import Dashboard from './components/Dashboard';
 
 // Lazy Loaded Components
+const Announcements = React.lazy(() => import('./components/Announcements'));
+const ChatOverlay = React.lazy(() => import('./components/ChatOverlay'));
+const WalletHistory = React.lazy(() => import('./components/WalletHistory'));
+const SearchResults = React.lazy(() => import('./components/SearchResults'));
+const Sitemap = React.lazy(() => import('./components/Sitemap'));
+const SystemDiagrams = React.lazy(() => import('./components/SystemDiagrams'));
+const WhitePaper = React.lazy(() => import('./components/WhitePaper'));
+const TokenExchange = React.lazy(() => import('./components/TokenExchange'));
 const BookingHub = React.lazy(() => import('./components/BookingHub'));
 const DaoGovernance = React.lazy(() => import('./components/DaoGovernance'));
 const Marketplace = React.lazy(() => import('./components/Marketplace'));
@@ -81,6 +80,8 @@ const MembershipPlans = React.lazy(
 const MyCircle = React.lazy(() => import('./components/MyCircle'));
 const AdminReview = React.lazy(() => import('./components/AdminReview'));
 const ContractsDashboard = React.lazy(() => import('./components/ContractsDashboard'));
+//const JoinRequestForm = React.lazy(() => import('./components/JoinRequestForm'));
+const AdminJoinRequests = React.lazy(() => import('./components/AdminJoinRequests'));
 
 const PageLoader = () => (
   <div className="h-[60vh] w-full flex flex-col items-center justify-center text-kala-400">
@@ -176,7 +177,6 @@ const AppContent: React.FC = () => {
   const [isProfileComplete, setIsProfileComplete] = useState(true);
   const [showWalletHistory, setShowWalletHistory] = useState(false);
   const [showTokenExchange, setShowTokenExchange] = useState(false);
-  const [isConnecting, setIsConnecting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProfile, setSelectedProfile] = useState(MOCK_ARTIST_PROFILE);
   const [isUserBlocked, setIsUserBlocked] = useState(false);
@@ -188,10 +188,9 @@ const AppContent: React.FC = () => {
 
   const {
     isConnected: isWalletConnected,
-    connect: connectWallet,
+    open: openWalletModal,
     disconnect: disconnectWallet,
-    walletAddress,
-    balances,
+    address: walletAddress,
   } = useWallet();
   const { notify } = useToast();
   const { addUser, isDemoMode, findUserByEmail, findUserByWallet, updateUser } =
@@ -202,6 +201,103 @@ const AppContent: React.FC = () => {
       setCurrentView(view);
     });
   };
+  
+  // --- REFACTORED LOGIN LOGIC ---
+
+  // Effect to automatically trigger login after a wallet is connected.
+  useEffect(() => {
+    if (walletAddress && isWalletConnected && !isAppLoggedIn && !isLoggingIn) {
+      // A small delay can prevent issues where context state hasn't fully propagated.
+      const timer = setTimeout(() => {
+        console.log("Wallet connected. Proceeding to login.");
+        handleLogin(null, 'web3');
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [walletAddress, isWalletConnected, isAppLoggedIn]);
+
+
+  const handleLogin = async (
+    role: UserRole | null,
+    method: 'web2' | 'web3',
+    credentials?: any
+  ) => {
+    // If login is attempted with 'web3' and the wallet is not yet connected,
+    // the function's ONLY responsibility is to open the modal. The useEffect above
+    // will take over once the connection is successful.
+    if (method === 'web3' && !isWalletConnected) {
+      openWalletModal();
+      return; // Stop execution here.
+    }
+
+    setIsLoggingIn(true);
+    let targetUser: any;
+
+    if (method === 'web3') {
+      // This part now only runs if the wallet is already connected.
+      if (isDemoMode) {
+        targetUser = MOCK_ARTIST_PROFILE; // In demo, any connected wallet gets the mock artist profile
+      } else {
+        targetUser = findUserByWallet(walletAddress!); // Find user by the connected address
+      }
+    } else { // 'web2' login
+      if (isDemoMode) {
+        targetUser = MOCK_USERS_BY_ROLE[role!] || MOCK_ARTIST_PROFILE;
+      } else {
+        try {
+          const response = await fetch('http://localhost:3001/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(credentials),
+          });
+          const data = await response.json();
+          if (!response.ok) {
+            notify(data.message || 'Login failed.', 'error');
+            setIsLoggingIn(false);
+            return;
+          }
+          targetUser = data.user;
+        } catch (error) {
+          notify('Login request failed. Is the server running?', 'error');
+          setIsLoggingIn(false);
+          return;
+        }
+      }
+    }
+
+    if (!targetUser) {
+      if (method === 'web3') {
+        notify('Wallet connected, but no user found. Please register.', 'info');
+        navigate('join_request'); // Guide user to sign up
+      } else {
+        notify('Login failed. Please check your credentials.', 'error');
+      }
+      setIsLoggingIn(false);
+      return;
+    }
+
+    if (!isDemoMode && (targetUser.role === UserRole.ADMIN || targetUser.role === UserRole.SYSTEM_ADMIN_LIVE) && method === 'web3') {
+      notify('Admin-level roles may not use wallet-based login for security reasons.', 'error');
+      setIsLoggingIn(false);
+      return;
+    }
+
+    setCurrentUserRole(targetUser.role);
+    setCurrentUser(targetUser as IArtistProfile);
+    setSelectedProfile(targetUser as IArtistProfile);
+    setIsAppLoggedIn(true);
+    setIsUserBlocked(false);
+
+    startTransition(() => {
+      setCurrentView('dashboard');
+    });
+
+    notify(`Welcome back, ${targetUser.name}!`, 'info');
+    setIsLoggingIn(false);
+  };
+
+  // --- END REFACTORED LOGIC ---
+
 
   const addLead = (artist: Artist): boolean => {
     let wasAdded = false;
@@ -279,97 +375,9 @@ const AppContent: React.FC = () => {
     setShowChat(true);
   };
 
-  const handleWalletConnect = async () => {
-    setIsConnecting(true);
-    try {
-      const newAddress = await connectWallet();
-      notify('Wallet connected successfully!', 'success');
-    } catch (error) {
-      notify('Wallet connection failed or was cancelled.', 'error');
-    }
-    setIsConnecting(false);
+  const handleWalletConnect = () => {
+    openWalletModal();
   };
-
-  const handleLogin = async (
-    role: UserRole,
-    method: 'web2' | 'web3',
-    credentials?: any
-  ) => {
-    setIsLoggingIn(true);
-    let targetUser: any;
-
-    // DEMO MODE LOGIN (using mock data)
-    if (isDemoMode) {
-      targetUser = MOCK_USERS_BY_ROLE[role] || MOCK_ARTIST_PROFILE;
-      if (method === 'web3' && !isWalletConnected) {
-        try {
-          await connectWallet();
-        } catch (e) { 
-          notify('Wallet connection failed.', 'error');
-          setIsLoggingIn(false);
-          return;
-        }
-      }
-    // LIVE MODE LOGIN (using API)
-    } else {
-      if (method === 'web2' && credentials) {
-        try {
-          const response = await fetch('http://localhost:3001/api/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(credentials),
-          });
-          const data = await response.json();
-          if (response.ok) {
-            targetUser = data.user;
-          } else {
-            notify(data.message || 'Login failed.', 'error');
-            setIsLoggingIn(false);
-            return;
-          }
-        } catch (error) {
-          notify('Login request failed. Is the server running?', 'error');
-          setIsLoggingIn(false);
-          return;
-        }
-      } else if (method === 'web3') {
-        const addr = isWalletConnected ? walletAddress : await connectWallet();
-        if (addr) {
-          targetUser = findUserByWallet(addr); // Still uses mock data, can be expanded later
-        }
-      }
-    }
-
-    if (!targetUser) {
-      notify('Login failed. Please check your credentials or wallet.', 'error');
-      setIsLoggingIn(false);
-      return;
-    }
-    
-    // Security check for high-privilege roles using Web3 login in live mode
-    if (!isDemoMode && (targetUser.role === UserRole.ADMIN || targetUser.role === UserRole.SYSTEM_ADMIN_LIVE) && method === 'web3') {
-      notify('Admin-level roles may not use wallet-based login in live mode for security reasons.', 'error');
-      setIsLoggingIn(false);
-      return;
-    }
-
-    setCurrentUserRole(targetUser.role);
-    setCurrentUser(targetUser as IArtistProfile);
-    setSelectedProfile(targetUser as IArtistProfile);
-    setIsAppLoggedIn(true);
-    setIsUserBlocked(false);
-
-    startTransition(() => {
-      setCurrentView('dashboard');
-    });
-
-    if (targetUser.role === UserRole.ARTIST) {
-      setIsProfileComplete(true);
-    }
-    notify(`Welcome back, ${targetUser.name}!`, 'info');
-    setIsLoggingIn(false);
-  };
-
 
   const handleLogout = () => {
     setIsAppLoggedIn(false);
@@ -450,10 +458,10 @@ const AppContent: React.FC = () => {
           {!isWalletConnected ? (
             <button
               onClick={handleWalletConnect}
-              disabled={isConnecting || isLoggingIn}
+              disabled={isLoggingIn}
               className="text-xs bg-kala-secondary text-kala-900 px-3 py-1.5 rounded font-bold hover:bg-cyan-400 transition-colors flex items-center gap-2"
             >
-              {isConnecting || isLoggingIn ? (
+              {isLoggingIn ? (
                 <Loader2 className="w-3 h-3 animate-spin" />
               ) : (
                 'Connect Wallet'
@@ -471,14 +479,6 @@ const AppContent: React.FC = () => {
                   <div>
                     <div className="text-sm font-bold text-white text-right font-mono tracking-tighter">
                       {walletAddress}
-                    </div>
-                    <div className="flex gap-2 justify-end">
-                      <span className="text-xs text-kala-secondary font-mono">
-                        {balances.eth.toFixed(2)} ETH
-                      </span>
-                      <span className="text-xs text-purple-400 font-mono">
-                        {balances.kala.toFixed(0)} KALA
-                      </span>
                     </div>
                   </div>
                   <button
@@ -723,9 +723,13 @@ const AppContent: React.FC = () => {
   }
   if (!isAppLoggedIn) {
     if (currentView === 'announcements_public') {
-      return <Announcements onBack={() => navigate('home')} />;
+      return (
+        <Suspense fallback={<PageLoader />}>
+          <Announcements onBack={() => navigate('home')} />
+        </Suspense>
+      );
     }
-    if (currentView === 'register_new_user') {
+    if (currentView === 'join_request') {
       return (
         <div className="min-h-screen bg-kala-900 overflow-y-auto">
           <div className="max-w-3xl mx-auto px-6 py-8">
@@ -737,10 +741,9 @@ const AppContent: React.FC = () => {
             </button>
             <Suspense fallback={<PageLoader />}>
               <ArtistRegistration
-                onComplete={(profile) => {
-                  addUser(profile);
-                  notify('Registration complete! Please log in.', 'success');
+                onComplete={() => {
                   navigate('home');
+                  notify('Your request has been submitted!', 'success');
                 }}
                 onBlockUser={handleBlockUser}
               />
@@ -753,7 +756,8 @@ const AppContent: React.FC = () => {
       <Home
         onLogin={handleLogin}
         onViewNews={() => navigate('announcements_public')}
-        onJoin={() => navigate('register_new_user')}
+        onJoin={() => navigate('join_request')}
+        isLoggingIn={isLoggingIn}
       />
     );
   }
@@ -765,21 +769,23 @@ const AppContent: React.FC = () => {
       onNavigate={navigate}
       onLogout={handleLogout}
     >
-      {showChat && (
-        <ChatOverlay
-          recipientName={chatRecipient.name}
-          recipientAvatar={chatRecipient.avatar}
-          onClose={() => setShowChat(false)}
-          onNavigateToBooking={() => {
-            setShowChat(false);
-            navigate('booking');
-          }}
-          onBlockUser={handleBlockUser}
-        />
-      )}
-      {showTokenExchange && (
-        <TokenExchange onClose={() => setShowTokenExchange(false)} />
-      )}
+      <Suspense fallback={<PageLoader />}>
+        {showChat && (
+          <ChatOverlay
+            recipientName={chatRecipient.name}
+            recipientAvatar={chatRecipient.avatar}
+            onClose={() => setShowChat(false)}
+            onNavigateToBooking={() => {
+              setShowChat(false);
+              navigate('booking');
+            }}
+            onBlockUser={handleBlockUser}
+          />
+        )}
+        {showTokenExchange && (
+          <TokenExchange onClose={() => setShowTokenExchange(false)} />
+        )}
+      </Suspense>
       {currentView !== 'dashboard' && <UserWidget />}
       {renderAppContent()}
     </Layout>
@@ -793,9 +799,7 @@ const App: React.FC = () => {
         <WalletProvider>
           <DataProvider>
             <AuthProvider>
-              <Web3Provider>
-                <AppContent />
-              </Web3Provider>
+              <AppContent />
             </AuthProvider>
           </DataProvider>
         </WalletProvider>
