@@ -29,6 +29,7 @@ import { useToast } from '../contexts/ToastContext';
 import Layers from './Layers';
 import { IPFSAsset } from '../types';
 import { useWallet } from '../contexts/WalletContext';
+import { useWeb3Modal } from '@web3modal/ethers/react';
 import {
   checkContentForViolation,
   MODERATION_WARNING_TEXT,
@@ -96,7 +97,9 @@ const CreativeStudio: React.FC<CreativeStudioProps> = ({
   // State from old version
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const { isConnected, connect } = useWallet();
+  const { isConnected } = useWallet();
+  const { open } = useWeb3Modal();
+
   const [assets, setAssets] = useState<IPFSAsset[]>([
     {
       id: '1',
@@ -198,7 +201,7 @@ const CreativeStudio: React.FC<CreativeStudioProps> = ({
   const handleMint = async (assetId: string) => {
     if (!isConnected) {
       notify('Please connect your wallet to Mint NFTs.', 'warning');
-      await connect();
+      await open();
       return;
     }
     notify('Minting transaction started...', 'info');

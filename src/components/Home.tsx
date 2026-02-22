@@ -183,16 +183,8 @@ const Home: React.FC<HomeProps> = ({ onLogin, onViewNews, onJoin, isLoggingIn })
 
   const previewMembers = users.slice(0, 5);
 
-  // Correction for the handleLoginClick function
   const handleLoginClick = (method: 'web2' | 'web3') => {
     if (selectedRoleForLogin) {
-      if (loginMode === 'live' && method === 'web3') {
-        notify(
-          'Wallet login is disabled for Live Mode for security reasons.',
-          'error'
-        );
-        return;
-      }
       if (loginMode === 'live' && method === 'web2' && (!email || !password)) {
         notify('Please enter email and password for Live access.', 'warning');
         return;
@@ -262,10 +254,12 @@ const Home: React.FC<HomeProps> = ({ onLogin, onViewNews, onJoin, isLoggingIn })
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-kala-secondary/10 rounded-full blur-3xl -z-10"></div>
 
         <div className="max-w-4xl mx-auto px-6 pt-16 pb-16 text-center">
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
-            The Future of{' '}
-            <span className="text-kala-secondary">Creative Business</span>
-          </h1>
+           <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+           <span className="text-white">The Future of </span>
+           <span className="bg-clip-text text-transparent bg-linear-to-r from-cyan-400 via-blue-500 to-purple-600">
+           Creative Business
+           </span>
+           </h1>
           <p className="text-xl text-kala-300 mb-10 max-w-2xl mx-auto">
             A hybrid social enterprise and gamified community portal. We connect
             artists, venues, and sponsors through Web3 governance and
