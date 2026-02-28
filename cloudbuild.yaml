@@ -1,25 +1,36 @@
 steps:
-  # 1. Install Dependencies
+  # 1. Install Dependencies for the frontend (root)
   - name: 'node:20'
     entrypoint: 'npm'
     args: ['install']
+    id: 'Install Frontend Dependencies'
 
-  # 2. Build the React Application (Production Optimization)
+  # 2. Install Dependencies for the backend (server)
+  - name: 'node:20'
+    entrypoint: 'npm'
+    args: ['install']
+    dir: 'server'
+    id: 'Install Backend Dependencies'
+
+  # 3. Build the backend (run migrations and generate prisma client)
+  - name: 'node:20'
+    entrypoint: 'npm'
+    args: ['run', 'gcp-build']
+    dir: 'server'
+    id: 'Build Backend'
+
+  # 4. Build the React Application (frontend)
   - name: 'node:20'
     entrypoint: 'npm'
     args: ['run', 'build']
     env:
       - 'REACT_APP_ENV=production'
+    id: 'Build Frontend'
 
-  # 3. (Optional) Run Tests - Ensure code quality before deploying
-  # - name: 'node:20'
-  #   entrypoint: 'npm'
-  #   args: ['test', '--', '--watchAll=false']
-
-  # 4. Deploy to Firebase Hosting
-  # Note: Requires the Cloud Build Service Account to have 'Firebase Admin' role
+  # 5. Deploy to Firebase App Hosting
   - name: 'gcr.io/$PROJECT_ID/firebase'
-    args: ['deploy', '--project', '$PROJECT_ID', '--only', 'hosting']
+    args: ['deploy', '--project', '$PROJECT_ID']
+    id: 'Deploy'
 
 # Save build artifacts (optional, for debugging)
 artifacts:

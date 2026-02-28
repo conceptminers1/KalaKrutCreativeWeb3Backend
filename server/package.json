@@ -5,9 +5,9 @@
   "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npx prisma migrate deploy && node src/index.js",
+    "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "gcp-build": "npx prisma generate"
+    "gcp-build": "npx prisma migrate deploy && npx prisma generate"
   },
   "keywords": [],
   "author": "",
