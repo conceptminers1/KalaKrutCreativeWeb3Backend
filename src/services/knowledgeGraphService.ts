@@ -123,11 +123,13 @@ class KnowledgeGraph {
   private connections: Map<string, string[]>;
   public nodes: Node[];
   public edges: Edge[];
+  private rosterMembers: (RosterMember & { protected?: boolean })[] = [];
 
   constructor() {
     this.connections = new Map();
     this.nodes = [];
     this.edges = [];
+    this.fetchRosterMembers();
   }
 
   /**
@@ -170,15 +172,35 @@ class KnowledgeGraph {
     return this.connections.get(id) || [];
   }
 
+  private async fetchRosterMembers() {
+    try {
+      const response = await fetch('/api/roster-members.json');
+      const realMembers = await response.json();
+      this.rosterMembers = [
+        ...MOCK_ROSTER.map((member) => ({
+          ...member,
+          protected: member.role === UserRole.SPONSOR,
+        })),
+        ...realMembers.map((member: RosterMember) => ({
+          ...member,
+          protected: member.role === UserRole.SPONSOR,
+        })),
+      ];
+    } catch (error) {
+      console.error('Error fetching roster members:', error);
+      this.rosterMembers = MOCK_ROSTER.map((member) => ({
+        ...member,
+        protected: member.role === UserRole.SPONSOR,
+      }));
+    }
+  }
+
+
   /**
    * Retrieves the full community roster and enriches it with dynamic properties.
    */
   public getRosterMembers(): (RosterMember & { protected?: boolean })[] {
-    return MOCK_ROSTER.map((member) => ({
-      ...member,
-      // Simulate a protected user for guest view demonstration
-      protected: member.role === UserRole.SPONSOR,
-    }));
+    return this.rosterMembers;
   }
 
   /**

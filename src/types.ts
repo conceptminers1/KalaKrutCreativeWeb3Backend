@@ -1,3 +1,8 @@
+export enum ItemStatus {
+  AVAILABLE = "AVAILABLE",
+  SOLD = "SOLD",
+  REMOVED = "REMOVED",
+}
 
 export enum UserRole {
   ADMIN = 'Admin',
@@ -262,6 +267,7 @@ export interface Booking {
 
 export interface MarketplaceItem {
   id: string;
+  sellerId: string;
   title: string;
   type: 'NFT' | 'Physical Art' | 'Ticket' | 'Instrument' | 'Equipment';
   price: number;
@@ -308,6 +314,7 @@ export interface Article {
 
 export interface ForumThread {
   id: string;
+  authorId: string;
   title: string;
   category: 'Collaboration' | 'Gear Swap' | 'General' | 'Showcase';
   author: string;

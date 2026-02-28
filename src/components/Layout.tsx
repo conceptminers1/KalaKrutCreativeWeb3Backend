@@ -34,6 +34,7 @@ import { useData } from '../hooks/useData';
 import SupportWidget from '../components/SupportWidget';
 import { useToast } from '../contexts/ToastContext';
 import UserNotifications from './UserNotifications';
+import { DISABLE_ACCESS_DENIED } from '@/DISABLE_ACCESS_DENIED';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -132,7 +133,7 @@ const Layout: React.FC<LayoutProps> = ({
   const communityNavItems = [
     { id: 'roster', icon: Contact2, label: 'Roster / Members' },
     { id: 'forum', icon: MessageSquare, label: 'Forum' },
-    { id: 'my_circle', icon: Users, label: 'My Circle' },
+    { id: 'my_network', icon: Users, label: 'My Network' },
     { id: 'membership', icon: CreditCard, label: 'Membership & Plans' },
   ];
 
@@ -147,7 +148,7 @@ const Layout: React.FC<LayoutProps> = ({
       { id: 'governance', icon: Vote, label: 'DAO Governance' },
       { id: 'contracts', icon: FileSignature, label: 'Contracts & Agreements' },
       { id: 'treasury', icon: Coins, label: 'Treasury' },
-      { id: 'hrd', icon: Briefcase, label: 'HRD & Team' },
+      { id: 'hrds', icon: Briefcase, label: 'HRD & Team' },
       { id: 'analytics', icon: BarChart3, label: 'Analytics' },
       { id: 'admin_support', icon: LifeBuoy, label: 'Support Center' },
       { id: 'leads', icon: Bot, label: 'Leads & AI' },
@@ -159,7 +160,7 @@ const Layout: React.FC<LayoutProps> = ({
       },
     ];
 
-    if (userRole === UserRole.ADMIN || userRole === UserRole.SYSTEM_ADMIN_LIVE) {
+    if (DISABLE_ACCESS_DENIED || userRole === UserRole.ADMIN || userRole === UserRole.SYSTEM_ADMIN_LIVE) {
       return allAdminItems;
     }
 

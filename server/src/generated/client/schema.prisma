@@ -1,0 +1,412 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/client" // Force it into your source code
+}
+
+// ========= ENUMS =========
+
+enum UserRole {
+  ARTIST
+  VENUE
+  SERVICE_PROVIDER
+  ORGANIZER
+  SPONSOR
+  REVELLER
+  ADMIN
+  DAO_GOVERNOR
+  DAO_MEMBER
+  SYSTEM_ADMIN_LIVE
+}
+
+enum ContractStatus {
+  PENDING
+  SIGNED
+  ACTIVE
+  FULFILLED
+  DISPUTED
+  CANCELED
+}
+
+enum OnboardingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ProposalStatus {
+  PENDING
+  ACTIVE
+  PASSED
+  FAILED
+  EXECUTED
+}
+
+enum EscrowStatus {
+  CREATED
+  FUNDED
+  RELEASED
+  REFUNDED
+  DISPUTED
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+// ========= AUTH & CORE USER MODELS =========
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  avatar        String? // Renamed from 'image' for consistency
+  role          UserRole  @default(REVELLER)
+
+  // Common Profile Fields
+  location String?
+  website  String?
+  tags     String[] @default([])
+
+  accounts Account[]
+  sessions Session[]
+  lead     Lead?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  // Onboarding
+  onboardingRequest OnboardingRequest?
+
+  // Profile relationships
+  artistProfile          ArtistProfile?
+  venueProfile           VenueProfile?
+  sponsorProfile         SponsorProfile?
+  organizerProfile       OrganizerProfile?
+  serviceProviderProfile ServiceProviderProfile?
+  revellerProfile        RevellerProfile? // Added for Revellers
+  daoMemberProfile       DaoMemberProfile?
+
+  // User Actions
+  gigsAsArtist       Gig[]                  @relation("ArtistGigs")
+  gigsAsVenue        Gig[]                  @relation("VenueGigs")
+  initiatedContracts Contract[]             @relation("InitiatedContracts")
+  signedContracts    Contract[]             @relation("SignedContracts")
+  proposals          Proposal[]
+  votes              Vote[]
+  ownedNFTs          NFT[]
+  ownedTickets       EventTicket[]
+  ownedFractions     FractionalTokenOwner[]
+  escrowsAsParty     EscrowContract[]
+  fiatTransactions   FiatTransaction[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ========= USER ONBOARDING =========
+
+model OnboardingRequest {
+  id          String           @id @default(cuid())
+  user        User             @relation(fields: [userId], references: [id])
+  userId      String           @unique
+  status      OnboardingStatus @default(PENDING)
+  submittedAt DateTime         @default(now())
+  reviewedAt  DateTime?
+  reviewNotes String?          @db.Text
+}
+
+// ========= USER PROFILES =========
+
+model ArtistProfile {
+  id           String  @id @default(cuid())
+  user         User    @relation(fields: [userId], references: [id])
+  userId       String  @unique
+  artistName   String  @unique // Added for explicit naming
+  genre        String?
+  bio          String? @db.Text
+  techRiderUrl String?
+  portfolioUrl String?
+}
+
+model VenueProfile {
+  id           String   @id @default(cuid())
+  user         User     @relation(fields: [userId], references: [id])
+  userId       String   @unique
+  venueName    String   @unique // Added for explicit naming
+  bookingEmail String? // Added for direct contact
+  address      String?
+  capacity     Int?
+  amenities    String[]
+}
+
+model SponsorProfile {
+  id              String   @id @default(cuid())
+  user            User     @relation(fields: [userId], references: [id])
+  userId          String   @unique
+  sponsorName     String   @unique // Added for explicit naming
+  companyName     String?
+  website         String?
+  focusAreas      String[]
+  sponsorshipTier String? // Added from form
+}
+
+model OrganizerProfile {
+  id            String   @id @default(cuid())
+  user          User     @relation(fields: [userId], references: [id])
+  userId        String   @unique
+  organizerName String   @unique // Added for explicit naming
+  organization  String?
+  pastEvents    String[]
+}
+
+model ServiceProviderProfile {
+  id                  String  @id @default(cuid())
+  user                User    @relation(fields: [userId], references: [id])
+  userId              String  @unique
+  serviceProviderName String  @unique // Added for explicit naming
+  serviceType         String // e.g., "Sound Engineer", "Lighting Tech", "Security"
+  rate                String?
+  availability        String?
+}
+
+model RevellerProfile {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @unique
+  interests String[] @default([])
+}
+
+model DaoMemberProfile {
+  id          String   @id @default(cuid())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String   @unique
+  votingPower Float    @default(0)
+  joinedAt    DateTime @default(now())
+}
+
+// ========= CORE BUSINESS LOGIC =========
+
+model Gig {
+  id          String   @id @default(cuid())
+  title       String
+  description String?  @db.Text
+  date        DateTime
+  status      String // e.g., PENDING, CONFIRMED, CANCELED, COMPLETED
+
+  artist   User   @relation("ArtistGigs", fields: [artistId], references: [id])
+  artistId String
+
+  venue   User   @relation("VenueGigs", fields: [venueId], references: [id])
+  venueId String
+
+  contracts Contract[]
+  event     Event?
+}
+
+model Contract {
+  id     String         @id @default(cuid())
+  title  String
+  terms  String         @db.Text
+  status ContractStatus @default(PENDING)
+
+  gig   Gig?    @relation(fields: [gigId], references: [id])
+  gigId String?
+
+  initiator   User   @relation("InitiatedContracts", fields: [initiatorId], references: [id])
+  initiatorId String
+
+  parties User[]          @relation("SignedContracts")
+  escrow  EscrowContract?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ========= DAO & GOVERNANCE =========
+
+model Proposal {
+  id          String         @id @default(cuid())
+  title       String
+  description String         @db.Text
+  status      ProposalStatus @default(PENDING)
+
+  proposer   User   @relation(fields: [proposerId], references: [id])
+  proposerId String
+
+  votes Vote[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Vote {
+  id String @id @default(cuid())
+
+  proposal   Proposal @relation(fields: [proposalId], references: [id])
+  proposalId String
+
+  voter   User   @relation(fields: [voterId], references: [id])
+  voterId String
+
+  choice      Boolean // true for 'Yes', false for 'No'
+  votingPower Float
+
+  createdAt DateTime @default(now())
+
+  @@unique([proposalId, voterId])
+}
+
+// ========= SMART CONTRACT & WEB3 MODELS =========
+
+model Event {
+  id      String        @id @default(cuid())
+  name    String
+  gig     Gig           @relation(fields: [gigId], references: [id])
+  gigId   String        @unique
+  tickets EventTicket[]
+
+  // Smart contract details
+  contractAddress String? @unique
+}
+
+model EventTicket {
+  id      String @id @default(cuid())
+  event   Event  @relation(fields: [eventId], references: [id])
+  eventId String
+  owner   User   @relation(fields: [ownerId], references: [id])
+  ownerId String
+
+  // Smart contract details
+  tokenId         Int    @unique
+  contractAddress String
+}
+
+model NFT {
+  id      String @id @default(cuid())
+  owner   User   @relation(fields: [ownerId], references: [id])
+  ownerId String
+
+  // Smart contract details
+  tokenId         Int
+  contractAddress String
+  metadataUrl     String
+
+  fractionalization Fractionalize?
+
+  @@unique([contractAddress, tokenId])
+}
+
+model Fractionalize {
+  id    String @id @default(cuid())
+  nft   NFT    @relation(fields: [nftId], references: [id])
+  nftId String @unique
+
+  // Smart contract details
+  tokenAddress String @unique
+  totalSupply  BigInt
+
+  tokenOwners FractionalTokenOwner[]
+}
+
+model FractionalTokenOwner {
+  id              String        @id @default(cuid())
+  fractionalize   Fractionalize @relation(fields: [fractionalizeId], references: [id])
+  fractionalizeId String
+
+  owner   User   @relation(fields: [ownerId], references: [id])
+  ownerId String
+
+  balance BigInt
+
+  @@unique([fractionalizeId, ownerId])
+}
+
+model EscrowContract {
+  id         String   @id @default(cuid())
+  contract   Contract @relation(fields: [contractId], references: [id])
+  contractId String   @unique
+
+  // Smart contract details
+  escrowAddress String       @unique
+  status        EscrowStatus @default(CREATED)
+  amount        Decimal
+
+  parties User[]
+}
+
+model Lead {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @unique
+  status    String // e.g., 'New', 'Contacted', 'Qualified'
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FiatTransaction {
+  id          String          @id @default(cuid())
+  amount      Decimal
+  currency    String
+  status      String
+  description String?
+  type        TransactionType
+  referenceId String?
+  notes       String?
+  userId      String?
+  user        User?           @relation(fields: [userId], references: [id])
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model JoinRequest {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String
+  walletAddress String
+  bio           String?
+  location      String?
+  musicBrainzId String?
+  status        String   @default("PENDING")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}

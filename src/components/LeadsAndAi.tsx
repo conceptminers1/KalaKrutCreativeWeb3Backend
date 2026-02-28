@@ -6,7 +6,7 @@ import { Artist, Lead } from '../types';
 
 interface LeadsAndAiProps {
   leads: Lead[];
-  addLead: (artist: Artist) => boolean;
+  addLead: (artist: Artist) => Promise<boolean>;
 }
 
 const LeadsAndAi: React.FC<LeadsAndAiProps> = ({ leads, addLead }) => {
@@ -14,6 +14,7 @@ const LeadsAndAi: React.FC<LeadsAndAiProps> = ({ leads, addLead }) => {
   const [artistQuery, setArtistQuery] = useState('');
   const [artistResults, setArtistResults] = useState<Artist[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [addingLeadId, setAddingLeadId] = useState<string | null>(null);
 
   const handleArtistSearch = async () => {
     if (!artistQuery) {
@@ -27,13 +28,15 @@ const LeadsAndAi: React.FC<LeadsAndAiProps> = ({ leads, addLead }) => {
     notify(`Found ${results.length} artists matching your query.`, 'success');
   };
 
-  const handleAddLead = (artist: Artist) => {
-    const wasAdded = addLead(artist);
+  const handleAddLead = async (artist: Artist) => {
+    setAddingLeadId(artist.id);
+    const wasAdded = await addLead(artist);
     if (wasAdded) {
       notify(`${artist.name} has been added as a new lead.`, 'success');
     } else {
       notify(`${artist.name} is already in your leads list.`, 'info');
     }
+    setAddingLeadId(null);
   };
 
   return (
@@ -53,7 +56,7 @@ const LeadsAndAi: React.FC<LeadsAndAiProps> = ({ leads, addLead }) => {
           />
           <button
             onClick={handleArtistSearch}
-            disabled={isSearching}
+            disabled={isSearching || !!addingLeadId}
             className="bg-teal-600 hover:bg-teal-500 text-white font-bold px-6 py-2 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSearching ? (
@@ -98,10 +101,15 @@ const LeadsAndAi: React.FC<LeadsAndAiProps> = ({ leads, addLead }) => {
                     <td className="px-6 py-4 text-center">
                       <button
                         onClick={() => handleAddLead(artist)}
-                        className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                        disabled={!!addingLeadId}
+                        className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-2 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <UserPlus className="w-4 h-4" />
-                        Add as Lead
+                        {addingLeadId === artist.id ? (
+                          <RefreshCw className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <UserPlus className="w-4 h-4" />
+                        )}
+                        {addingLeadId === artist.id ? 'Adding...' : 'Add as Lead'}
                       </button>
                     </td>
                   </tr>
@@ -113,12 +121,12 @@ const LeadsAndAi: React.FC<LeadsAndAiProps> = ({ leads, addLead }) => {
       )}
 
       {/* Leads Table */}
-      {leads.length > 0 && (
-        <div className="bg-kala-800/40 border border-kala-700/80 rounded-xl">
-          <div className="p-4 border-b border-kala-700">
-            <h3 className="font-bold text-white">My Leads</h3>
-          </div>
-          <div className="overflow-x-auto">
+      <div className="bg-kala-800/40 border border-kala-700/80 rounded-xl">
+        <div className="p-4 border-b border-kala-700">
+          <h3 className="font-bold text-white">My Leads</h3>
+        </div>
+        <div className="overflow-x-auto">
+          {leads.length > 0 ? (
             <table className="w-full text-sm text-left">
               <thead className="text-xs text-kala-400 uppercase bg-kala-800/60">
                 <tr>
@@ -140,7 +148,7 @@ const LeadsAndAi: React.FC<LeadsAndAiProps> = ({ leads, addLead }) => {
                     <td className="px-6 py-4">
                       <span
                         className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          lead.status === 'New'
+                          lead.status === 'New' || lead.status === 'PENDING'
                             ? 'bg-blue-900 text-blue-300'
                             : lead.status === 'Contacted'
                               ? 'bg-yellow-900 text-yellow-300'
@@ -163,9 +171,16 @@ const LeadsAndAi: React.FC<LeadsAndAiProps> = ({ leads, addLead }) => {
                 ))}
               </tbody>
             </table>
-          </div>
+          ) : (
+            <div className="text-center py-12 text-kala-500">
+              <p>No leads have been added yet.</p>
+              <p className="text-xs">
+                Use the search above to find and add new artists.
+              </p>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 };

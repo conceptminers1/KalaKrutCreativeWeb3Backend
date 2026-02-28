@@ -14,6 +14,7 @@ import {
   Artist,
   Notification,
   ApprovalStatus,
+  ItemStatus,
 } from '../types';
 import {
   MOCK_ROSTER,
@@ -30,7 +31,7 @@ export interface DataContextType {
   addUser: (user: ArtistProfile) => void;
   updateUser: (user: Partial<RosterMember>) => void;
   addMarketItem: (item: MarketplaceItem) => void;
-  addLead: (artist: Artist) => boolean; // Returns true if added, false if duplicate
+  addLead: (artist: Artist) => boolean;
   updateLeadStatus: (leadId: string, status: ArtistProfile['leadStatus']) => void;
   removeLead: (leadId: string) => void;
   addNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => void;
@@ -45,16 +46,16 @@ export interface DataContextType {
     activeGigs: number;
     totalTransactions: string;
   };
-  // Auth Helpers
+  // Auth & User Lookup
   findUserByEmail: (email: string) => RosterMember | undefined;
   findUserByWallet: (address: string) => RosterMember | undefined;
+  getUserById: (id: string) => RosterMember | undefined;
 }
 
 export const DataContext = createContext<DataContextType | undefined>(
   undefined
 );
 
-// The custom hook that was missing
 export const useData = () => {
   const context = useContext(DataContext);
   if (context === undefined) {
@@ -75,21 +76,8 @@ const SYSTEM_ADMIN: RosterMember = {
   location: 'Server Room',
   verified: true,
   rating: 5.0,
-  assets: {
-    ips: [],
-    contents: [],
-    events: [],
-    products: [],
-    services: [],
-    equipment: [],
-    instruments: [],
-    tickets: [],
-  },
-  subscriberOnly: {
-    email: 'admin@kalakrut.io',
-    phone: 'N/A',
-    agentContact: 'System',
-  },
+  assets: { ips: [], contents: [], events: [], products: [], services: [], equipment: [], instruments: [], tickets: [] },
+  subscriberOnly: { email: 'admin@kalakrut.io', phone: 'N/A', agentContact: 'System' },
   isMock: false,
 };
 
@@ -102,28 +90,13 @@ const SUPER_ADMIN: RosterMember = {
   location: 'Global HQ',
   verified: true,
   rating: 5.0,
-  assets: {
-    ips: [],
-    contents: [],
-    events: [],
-    products: [],
-    services: [],
-    equipment: [],
-    instruments: [],
-    tickets: [],
-  },
-  subscriberOnly: {
-    email: 'bhoominpandya@gmail.com',
-    phone: '+1 (555) 000-SUPER',
-    agentContact: 'Direct',
-  },
+  assets: { ips: [], contents: [], events: [], products: [], services: [], equipment: [], instruments: [], tickets: [] },
+  subscriberOnly: { email: 'bhoominpandya@gmail.com', phone: '+1 (555) 000-SUPER', agentContact: 'Direct' },
   isMock: false,
   password: 'Creatkala!2',
 };
 
-export const DataProvider: React.FC<{ children: ReactNode }> = ({
-  children,
-}) => {
+export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [allUsers, setAllUsers] = useState<RosterMember[]>(() => {
     try {
       const saved = localStorage.getItem('kk_users');
@@ -131,10 +104,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
           let users = parsed.filter(Boolean);
-          if (!users.some((u) => u && u.id === SYSTEM_ADMIN.id))
-            users.push(SYSTEM_ADMIN);
-          if (!users.some((u) => u && u.id === SUPER_ADMIN.id))
-            users.push(SUPER_ADMIN);
+          if (!users.some((u) => u && u.id === SYSTEM_ADMIN.id)) users.push(SYSTEM_ADMIN);
+          if (!users.some((u) => u && u.id === SUPER_ADMIN.id)) users.push(SUPER_ADMIN);
           return users;
         }
       }
@@ -157,7 +128,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     return [];
   });
   
-    const [notifications, setNotifications] = useState<Notification[]>(() => {
+  const [notifications, setNotifications] = useState<Notification[]>(() => {
     try {
       const saved = localStorage.getItem('kk_notifications');
       if (saved) {
@@ -170,14 +141,20 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     return [];
   });
 
-
   const [allMarketItems, setAllMarketItems] = useState<MarketplaceItem[]>(
     () => {
       try {
         const saved = localStorage.getItem('kk_market');
         if (saved) {
           const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed)) return parsed.filter(Boolean);
+          if (Array.isArray(parsed)) {
+            const uniqueIds = new Set();
+            return parsed.filter(item => {
+              if (!item || !item.id || uniqueIds.has(item.id)) return false;
+              uniqueIds.add(item.id);
+              return true;
+            });
+          }
         }
       } catch (error) {
         console.error("CRITICAL: Failed to load 'kk_market'.", error);
@@ -200,33 +177,19 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   });
 
   const [isDemoMode, setIsDemoMode] = useState(true);
-
   const [demoModeAvailable, setDemoModeAvailable] = useState(() => {
     const saved = localStorage.getItem('kk_demo_available');
     return saved !== null ? JSON.parse(saved) : true;
   });
 
-  useEffect(() => {
-    localStorage.setItem('kk_users', JSON.stringify(allUsers));
-  }, [allUsers]);
-  useEffect(() => {
-    localStorage.setItem('kk_leads', JSON.stringify(allLeads));
-  }, [allLeads]);
-    useEffect(() => {
-    localStorage.setItem('kk_notifications', JSON.stringify(notifications));
-  }, [notifications]);
-  useEffect(() => {
-    localStorage.setItem('kk_market', JSON.stringify(allMarketItems));
-  }, [allMarketItems]);
-  useEffect(() => {
-    localStorage.setItem('kk_proposals', JSON.stringify(allProposals));
-  }, [allProposals]);
+  useEffect(() => { localStorage.setItem('kk_users', JSON.stringify(allUsers)); }, [allUsers]);
+  useEffect(() => { localStorage.setItem('kk_leads', JSON.stringify(allLeads)); }, [allLeads]);
+  useEffect(() => { localStorage.setItem('kk_notifications', JSON.stringify(notifications)); }, [notifications]);
+  useEffect(() => { localStorage.setItem('kk_market', JSON.stringify(allMarketItems)); }, [allMarketItems]);
+  useEffect(() => { localStorage.setItem('kk_proposals', JSON.stringify(allProposals)); }, [allProposals]);
 
   useEffect(() => {
-    localStorage.setItem(
-      'kk_demo_available',
-      JSON.stringify(demoModeAvailable)
-    );
+    localStorage.setItem('kk_demo_available', JSON.stringify(demoModeAvailable));
     if (!demoModeAvailable) setIsDemoMode(false);
   }, [demoModeAvailable]);
 
@@ -240,39 +203,19 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       verified: false,
       rating: 0,
       walletAddress: profile.walletAddress,
-      assets: {
-        ips: [],
-        contents: [],
-        events: [],
-        products: [],
-        services: [],
-        equipment: [],
-        instruments: [],
-        tickets: [],
-      },
-      subscriberOnly: {
-        email: profile.email || 'hidden',
-        phone: 'Hidden',
-        agentContact: 'Direct',
-      },
+      assets: { ips: [], contents: [], events: [], products: [], services: [], equipment: [], instruments: [], tickets: [] },
+      subscriberOnly: { email: profile.email || 'hidden', phone: 'Hidden', agentContact: 'Direct' },
       isMock: false,
       password: profile.password,
     };
-    setAllUsers((prev) => [
-      newRosterMember,
-      ...prev.filter((p) => p.id !== newRosterMember.id),
-    ]);
+    setAllUsers((prev) => [newRosterMember, ...prev.filter((p) => p.id !== newRosterMember.id)]);
   };
 
   const updateUser = (updates: Partial<RosterMember>) => {
-    setAllUsers((prev) =>
-      prev.map((user) =>
-        user.id === updates.id ? { ...user, ...updates } : user
-      )
-    );
+    setAllUsers((prev) => prev.map((user) => (user.id === updates.id ? { ...user, ...updates } : user)));
   };
   
-    const addNotification = (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
+  const addNotification = (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
     const newNotification: Notification = {
       ...notification,
       id: `notif-${Date.now()}`,
@@ -283,11 +226,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   const markNotificationsAsRead = (userId: string) => {
-    setNotifications(prev =>
-        prev.map(n => (n.userId === userId ? { ...n, read: true } : n))
-    );
+    setNotifications(prev => prev.map(n => (n.userId === userId ? { ...n, read: true } : n)));
   };
-
 
   const addMarketItem = (item: MarketplaceItem) => {
     setAllMarketItems((prev) => [{ ...item, isMock: false }, ...prev]);
@@ -332,41 +272,44 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     setAllLeads(prev => prev.filter(lead => lead.id !== leadId));
   };
 
-
   const purgeMockData = () => {
-    if (
-      window.confirm(
-        "WARNING: This will delete all 'Working Example' data. This action cannot be undone. Are you sure?"
-      )
-    ) {
+    if (window.confirm("WARNING: This will delete all 'Working Example' data. This action cannot be undone. Are you sure?")) {
       setAllUsers((prev) => prev.filter((u) => !u.isMock));
       setAllMarketItems((prev) => prev.filter((i) => !i.isMock));
       setAllProposals((prev) => prev.filter((p) => !p.isMock));
     }
   };
 
-  const findUserByEmail = (email: string) =>
-    allUsers.find(
-      (u) => u.subscriberOnly?.email?.toLowerCase() === email.toLowerCase()
-    );
-  const findUserByWallet = (address: string) =>
-    allUsers.find(
-      (u) => u.walletAddress?.toLowerCase() === address.toLowerCase()
-    );
+  const findUserByEmail = (email: string) => allUsers.find((u) => u.subscriberOnly?.email?.toLowerCase() === email.toLowerCase());
+  const findUserByWallet = (address: string) => allUsers.find((u) => u.walletAddress?.toLowerCase() === address.toLowerCase());
+  const getUserById = (id: string) => allUsers.find((u) => u.id === id);
 
-  const visibleUsers = allUsers.filter(u => u.status === ApprovalStatus.APPROVED && !u.isMock)
-  const visibleLeads = isDemoMode ? allLeads.filter(l => l.status === ApprovalStatus.PENDING) : allLeads.filter(l => l.status === ApprovalStatus.PENDING && !l.isMock)
-  const visibleMarket = allMarketItems;
-  const visibleProposals = isDemoMode
-    ? allProposals
-    : allProposals.filter((p) => !p.isMock);
+  const visibleUsers = allUsers.filter(u => u.status === ApprovalStatus.APPROVED && !u.isMock);
+  const visibleLeads = isDemoMode ? allLeads.filter(l => l.status === ApprovalStatus.PENDING) : allLeads.filter(l => l.status === ApprovalStatus.PENDING && !l.isMock);
+  const visibleProposals = isDemoMode ? allProposals : allProposals.filter((p) => !p.isMock);
+  
+  // PERMANENT FIX: Join seller data with marketplace items
+  const visibleMarket = allMarketItems.map(item => {
+    const seller = getUserById(item.sellerId);
+    return {
+      ...item,
+      title: item.name, // Map name to title for the UI component
+      seller: seller ? {
+        name: seller.name,
+        avatar: seller.avatar,
+        verified: seller.verified,
+      } : {
+        name: "Unknown Seller",
+        avatar: "",
+        verified: false,
+      }
+    };
+  });
 
   const stats = {
     totalMembers: visibleUsers.length,
     activeGigs: visibleProposals.filter((p) => p.status === 'Active').length,
-    totalTransactions: isDemoMode
-      ? (12 + visibleUsers.filter((u) => !u.isMock).length).toString()
-      : '0',
+    totalTransactions: isDemoMode ? (12 + visibleUsers.filter((u) => !u.isMock).length).toString() : '0',
   };
 
   return (
@@ -393,6 +336,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         stats,
         findUserByEmail,
         findUserByWallet,
+        getUserById,
       }}
     >
       {children}

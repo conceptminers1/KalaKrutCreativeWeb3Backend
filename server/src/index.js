@@ -1,11 +1,21 @@
-
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import { PrismaClient } from '@prisma/client';
+import pkg from './generated/client/index.js';
+const { PrismaClient } = pkg;
 import leadsRouter from './routes/leads.js';
 import smartContractsRouter from './routes/smartContracts.js';
 import joinRequestRouter from './routes/joinRequest.js';
+import gigRouter from './routes/gig.js';
+import contractRouter from './routes/contract.js';
+import proposalRouter from './routes/proposal.js';
+import voteRouter from './routes/vote.js';
+import eventRouter from './routes/event.js';
+import eventTicketRouter from './routes/eventTicket.js';
+import nftRouter from './routes/nft.js';
+import escrowRouter from './routes/escrow.js';
+import userRouter from './routes/user.js';
+import transactionsRouter from './routes/transactions.js';
 
 const app = express();
 let prisma;
@@ -19,16 +29,8 @@ try {
 
 // A more robust CORS configuration for development
 const corsOptions = {
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    // and requests from any localhost port
-    if (!origin || /^http:\/\/localhost(:\d+)?$/.test(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true, // Allow cookies to be sent
+  origin: true,
+  credentials: true,
 };
 
 // Middleware
@@ -39,6 +41,17 @@ app.use(express.json());
 app.use('/api/leads', leadsRouter);
 app.use('/api', smartContractsRouter);
 app.use('/api/join-requests', joinRequestRouter);
+app.use('/api/gigs', gigRouter);
+app.use('/api/contracts', contractRouter);
+app.use('/api/proposals', proposalRouter);
+app.use('/api/votes', voteRouter);
+app.use('/api/events', eventRouter);
+app.use('/api/event-tickets', eventTicketRouter);
+app.use('/api/nfts', nftRouter);
+app.use('/api/escrows', escrowRouter);
+app.use('/api/users', userRouter);
+app.use('/api', transactionsRouter); // Newly added fiat transaction routes
+
 
 // Root endpoint
 app.get('/', (req, res) => {

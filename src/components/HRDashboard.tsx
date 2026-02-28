@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { MOCK_STAFF } from '../mockData';
 import { StaffMember } from '../types';
+import { ItemStatus } from '@/types/types';
 import {
   Users,
   UserPlus,

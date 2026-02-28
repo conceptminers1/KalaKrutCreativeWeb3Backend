@@ -6,6 +6,7 @@ import { contractAddresses as oldContractAddresses } from '../data/contractAddre
 import contractFactoryAbi from '../../artifacts/contracts/ContractFactory.sol/ContractFactory.json';
 import { MOCK_CONTRACTS } from '../mockData';
 import { SmartContractDraft } from '../types';
+import { FileSignature, Search, AlertTriangle, CheckCircle, ExternalLink } from 'lucide-react';
 
 // This will be replaced with the real address once the factory is deployed.
 const contractFactoryAddress = "0x0000000000000000000000000000000000000000"; // Using a placeholder
@@ -17,99 +18,118 @@ interface DeployedContract {
 }
 
 const ContractsDashboard: React.FC = () => {
-    const [newlyDeployedContracts, setNewlyDeployedContracts] = useState<DeployedContract[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        // Ensure this code runs only in the browser
         if (typeof window === 'undefined' || !window.ethereum) {
-            setError("Please install MetaMask to interact with contracts.");
+            setError("Please install MetaMask to interact with contracts. Live contract creation listening is disabled.");
             return;
         }
+    }, []);
 
-        let factoryContract: Contract;
-
-        const onContractCreated = (contractAddress: string, creator: string, contractType: string) => {
-            // Ensure state updates are safe and avoid race conditions
-            setNewlyDeployedContracts(prev => {
-                if (prev.some(c => c.address === contractAddress)) {
-                    return prev;
-                }
-                return [...prev, { type: contractType, address: contractAddress }];
-            });
+    const { liveContracts, mockContracts } = useMemo(() => {
+        const live = Object.entries(oldContractAddresses).map(([type, address]) => ({ type, address, isMock: false }));
+        const mock = MOCK_CONTRACTS.map(c => ({ type: c.contractType, address: c.id, isMock: true }));
+        
+        const filterContracts = (contracts: DeployedContract[]) => {
+            if (!searchTerm) return contracts;
+            return contracts.filter(
+                c => c.type.toLowerCase().includes(searchTerm.toLowerCase()) || c.address.toLowerCase().includes(searchTerm.toLowerCase())
+            );
         };
 
-        try {
-            const provider = new BrowserProvider(window.ethereum);
-            factoryContract = new Contract(contractFactoryAddress, contractFactoryAbi.abi, provider);
-            factoryContract.on("ContractCreated", onContractCreated);
-        } catch (e) {
-            console.error("Note: Could not connect to the ContractFactory. This is expected if it's not deployed yet.", e);
-            setError("Could not connect to the contract factory. Displaying existing contracts only.");
-        }
-
-        // Return the cleanup function to remove the listener
-        return () => {
-            if (factoryContract) {
-                factoryContract.off("ContractCreated", onContractCreated);
-            }
+        return {
+            liveContracts: filterContracts(live),
+            mockContracts: filterContracts(mock)
         };
-    }, []); // Empty dependency array ensures this runs only once on mount
+    }, [searchTerm]);
 
-    const allKnownContracts: DeployedContract[] = useMemo(() => {
-        const oldContracts = Object.entries(oldContractAddresses).map(([type, address]) => ({ type, address, isMock: false }));
-        const mockExamples = MOCK_CONTRACTS.map(c => ({ type: c.contractType, address: c.id, isMock: true }));
-        const combined = [...oldContracts, ...mockExamples, ...newlyDeployedContracts];
-        return combined.filter((v, i, a) => a.findIndex(t => (t.address === v.address)) === i);
-    }, [newlyDeployedContracts]);
-
-    const filteredContracts = useMemo(() => {
-        if (!searchTerm) {
-            return allKnownContracts;
-        }
-        return allKnownContracts.filter(
-            contract =>
-                contract.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                contract.address.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-    }, [allKnownContracts, searchTerm]);
+    const ContractList = ({ contracts, title, icon, isMockList }: { contracts: DeployedContract[], title: string, icon: React.ReactNode, isMockList?: boolean }) => (
+        <div className="bg-kala-800/40 border border-kala-700 p-4 sm:p-6 rounded-xl">
+            <div className="flex items-center gap-3 mb-4">
+                {icon}
+                <h2 className="text-2xl font-semibold text-white">{title}</h2>
+            </div>
+            {contracts.length > 0 ? (
+                <ul className="space-y-4">
+                    {contracts.map(({ type, address }, i) => (
+                        <li key={`${address}-${i}`} 
+                            className={`p-4 rounded-lg flex flex-col sm:flex-row justify-between sm:items-center transition-all duration-200 border 
+                            ${isMockList 
+                                ? 'bg-orange-800/20 border-orange-500/20' 
+                                : 'bg-green-800/20 border-green-500/20 hover:bg-green-800/40 hover:border-green-500/40'
+                            }`}>
+                            
+                            <div className="flex items-center gap-3">
+                                <span className={`font-bold ${isMockList ? 'text-orange-300' : 'text-green-300'}`}>
+                                    {type}
+                                </span>
+                            </div>
+                            
+                            {isMockList ? (
+                                <span className="text-sm font-mono bg-kala-900 text-kala-500 px-3 py-1 rounded-md mt-3 sm:mt-0 self-start sm:self-center select-all">
+                                    {address}
+                                </span>
+                            ) : (
+                                <a  href={`https://sepolia.etherscan.io/address/${address}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-sm font-mono bg-kala-900 text-kala-300 px-3 py-1 rounded-md mt-3 sm:mt-0 self-start sm:self-center group flex items-center gap-2 hover:bg-kala-700 transition-colors">
+                                    <span>{address}</span>
+                                    <ExternalLink className="w-4 h-4 text-kala-500 group-hover:text-kala-secondary transition-colors" />
+                                </a>
+                            )}
+                        </li>
+                    ))}
+                </ul>
+            ) : (
+                <div className="text-kala-500 text-center py-8">
+                    <p className="text-lg">No contracts found.</p>
+                    {searchTerm && <p className="text-sm mt-1">Your search for "{searchTerm}" did not match any contracts in this list.</p>}
+                </div>
+            )}
+        </div>
+    );
 
     return (
-        <div className="p-6 bg-gray-50 min-h-screen">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">Contracts & Agreements</h1>
-            <p className="text-gray-600 mb-6">A central dashboard for all deployed contracts on the platform.</p>
+        <div className="p-2 sm:p-6 bg-kala-900 min-h-screen text-white">
+            <div className="flex items-center gap-4 mb-2">
+                <FileSignature className="w-8 h-8 text-kala-secondary" />
+                <h1 className="text-3xl font-bold">Contracts & Agreements</h1>
+            </div>
+            <p className="text-kala-400 mb-8">A central dashboard for all deployed smart contracts on the platform.</p>
             
-            {error && <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6" role="alert"><p>{error}</p></div>}
+            {error && (
+                <div className="bg-red-500/10 border border-red-500/20 text-red-300 p-4 mb-6 rounded-lg flex items-center gap-3" role="alert">
+                    <AlertTriangle className="w-5 h-5" />
+                    <p>{error}</p>
+                </div>
+            )}
 
-            <div className="mb-6">
+            <div className="mb-8 relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-kala-500" />
                 <input 
                     type="text"
-                    placeholder="Search by type or address... (e.g., 'Treasury' or '0x2f56...')"
+                    placeholder="Search all contracts..."
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full bg-kala-800 border border-kala-700 rounded-lg pl-12 pr-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-kala-secondary placeholder-kala-500"
                 />
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-md">
-                <h2 className="text-2xl font-semibold text-gray-700 mb-4">All Contracts</h2>
-                {filteredContracts.length > 0 ? (
-                    <ul className="space-y-3">
-                        {filteredContracts.map(({ type, address, isMock }, i) => (
-                            <li key={`${address}-${i}`} className={`p-3 rounded-md flex flex-col sm:flex-row justify-between sm:items-center transition-colors ${isMock ? 'bg-orange-50' : 'bg-gray-50'} hover:bg-gray-200`}>
-                                <span className={`font-semibold ${isMock ? 'text-orange-700' : 'text-gray-800'}`}>
-                                    {type} {isMock && '(Mock Example)'}
-                                </span>
-                                <span className="text-sm font-mono bg-gray-200 text-gray-700 px-3 py-1 rounded mt-2 sm:mt-0">{address}</span>
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p className="text-gray-500 text-center py-4">
-                        {searchTerm ? `No contracts found for "${searchTerm}".` : "No contracts available."}
-                    </p>
-                )}
+            <div className="space-y-10">
+                <ContractList 
+                    contracts={liveContracts} 
+                    title="Portal's Contracts" 
+                    icon={<CheckCircle className="w-7 h-7 text-green-400" />}
+                />
+                <ContractList 
+                    contracts={mockContracts} 
+                    title="Users' Contracts" 
+                    icon={<AlertTriangle className="w-7 h-7 text-orange-400" />}
+                    isMockList
+                />
             </div>
         </div>
     );

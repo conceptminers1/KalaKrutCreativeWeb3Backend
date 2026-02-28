@@ -14,7 +14,64 @@ import {
   SupportTicket,
   CircleMember,
   SmartContractDraft,
+  Transaction,
+  Gig,
+  OnboardingRequest,
+  ItemStatus
 } from './types';
+
+export const MOCK_ONBOARDING_REQUESTS: OnboardingRequest[] = [
+    {
+        id: 'lead-001',
+        type: 'Lead',
+        name: 'Elena Petrova',
+        email: 'elena.p@example.com',
+        requestedRole: UserRole.ARTIST,
+        status: 'Pending',
+        date: new Date('2023-10-28T10:00:00Z'),
+        notes: 'Digital artist with a focus on generative art. Interested in learning about the NFT minting process.'
+    },
+    {
+        id: 'join-001',
+        type: 'Join Request',
+        name: 'Marcus Thorne',
+        email: 'm.thorne@corporatevent.com',
+        requestedRole: UserRole.SPONSOR,
+        status: 'Pending',
+        date: new Date('2023-10-27T15:30:00Z'),
+        notes: 'Represents a major beverage company interested in sponsoring the main stage.'
+    },
+    {
+        id: 'join-002',
+        type: 'Join Request',
+        name: 'Aisha Khan',
+        email: 'a.khan@soundwave.org',
+        requestedRole: UserRole.ORGANIZER,
+        status: 'Pending',
+        date: new Date('2023-10-26T11:00:00Z'),
+        notes: 'Experienced event organizer, wants to help with logistics for the art installations.'
+    },
+    {
+        id: 'lead-002',
+        type: 'Lead',
+        name: 'Javier Morales',
+        email: 'javi.m@email.com',
+        requestedRole: UserRole.REVELLER,
+        status: 'Approved',
+        date: new Date('2023-10-25T09:00:00Z'),
+        notes: 'Enthusiastic festival-goer, wants to be kept in the loop about ticket sales.'
+    },
+    {
+        id: 'join-003',
+        type: 'Join Request',
+        name: 'Samantha Bee',
+        email: 'samantha.b@venuepros.net',
+        requestedRole: UserRole.VENUE,
+        status: 'Denied',
+        date: new Date('2023-10-24T18:00:00Z'),
+        notes: 'Venue size is too small for the projected attendance numbers.'
+    },
+];
 
 // --- MOCK CIRCLE DATA ---
 const mockFollowers: CircleMember[] = [
@@ -278,7 +335,7 @@ export const MOCK_ROSTER: RosterMember[] = [
     walletAddress: '0xAbc...123',
   },
   {
-    id: 'r2',
+    id: 'u_venue',
     name: 'The Warehouse',
     role: UserRole.VENUE,
     avatar: 'https://picsum.photos/seed/venue1/200',
@@ -552,38 +609,36 @@ export const MOCK_PROPOSALS: Proposal[] = [
 export const MOCK_MARKETPLACE_ITEMS: MarketplaceItem[] = [
   {
     id: 'm1',
-    title: 'Cyberpunk Guitar (Limited Ed.)',
+    sellerId: 'u_artist',
+    name: 'Cyberpunk Guitar (Limited Ed.)',
     type: 'Instrument',
     price: 1200,
     currency: 'USD',
     image: 'https://picsum.photos/seed/guitar/400/400',
-    seller: {
-      name: 'Neon Pulse',
-      avatar: 'https://picsum.photos/seed/u2/50',
-      verified: true,
-    },
     isAuction: false,
     description:
       'Custom painted Cyberpunk 2077 themed electric guitar. Modified pickups for extra crunch. Used on stage during the "Neon Nights" tour.',
     condition: 'Like New',
+    status: ItemStatus.AVAILABLE,
+    createdAt: new Date('2023-10-20T10:00:00Z'),
+    updatedAt: new Date('2023-10-20T10:00:00Z'),
   },
   {
     id: 'm2',
-    title: 'Lifetime Backstage Pass NFT',
+    sellerId: 'u_venue',
+    name: 'Lifetime Backstage Pass NFT',
     type: 'NFT',
     price: 0.5,
     currency: 'ETH',
     image: 'https://picsum.photos/seed/nft1/400/400',
-    seller: {
-      name: 'The Warehouse',
-      avatar: 'https://picsum.photos/seed/venue1/50',
-      verified: true,
-    },
     isAuction: true,
     endTime: '2d 14h',
     description:
       'Granting lifetime backstage access to all events at The Warehouse London. Includes VIP bar access and meet & greet privileges. Tradable on secondary market.',
     condition: 'Digital',
+    status: ItemStatus.AVAILABLE,
+    createdAt: new Date('2023-10-18T14:00:00Z'),
+    updatedAt: new Date('2023-10-19T11:30:00Z'),
   },
 ];
 
@@ -592,8 +647,7 @@ export const MOCK_THREADS: ForumThread[] = [
     id: '1',
     title: 'Welcome to the Beta!',
     category: 'General',
-    author: 'System Admin',
-    authorAvatar: 'https://picsum.photos/seed/admin/50',
+    authorId: 'u_admin',
     replies: 2,
     views: 12,
     lastActive: '1h ago',
@@ -702,11 +756,7 @@ export const MOCK_CONTRACTS: SmartContractDraft[] = [
     {
         id: 'scd-001',
         contractType: 'KalaKrutToken',
-        content: `contract KalaKrutToken is ERC20 {
-    constructor() ERC20("KalaKrut Token", "KALA") {
-        _mint(msg.sender, 1000000 * 10 ** 18);
-    }
-}`,
+        content: `contract KalaKrutToken is ERC20 {\n    constructor() ERC20("KalaKrut Token", "KALA") {\n        _mint(msg.sender, 1000000 * 10 ** 18);\n    }\n}`,
         lastEditedBy: 'Admin',
         version: 1,
         status: 'Published',
@@ -715,10 +765,7 @@ export const MOCK_CONTRACTS: SmartContractDraft[] = [
     {
         id: 'scd-002',
         contractType: 'TimelockController',
-        content: `contract TimelockController is TimelockController {
-    constructor(uint256 minDelay, address[] memory proposers, address[] memory executors) 
-        TimelockController(minDelay, proposers, executors, msg.sender) {}
-}`,
+        content: `contract TimelockController is TimelockController {\n    constructor(uint256 minDelay, address[] memory proposers, address[] memory executors) \n        TimelockController(minDelay, proposers, executors, msg.sender) {}\n}`,
         lastEditedBy: 'Admin',
         version: 1,
         status: 'Published',
@@ -727,13 +774,7 @@ export const MOCK_CONTRACTS: SmartContractDraft[] = [
     {
         id: 'scd-003',
         contractType: 'KalaKrutGovernor',
-        content: `contract KalaKrutGovernor is Governor, GovernorVotes, GovernorVotesQuorumFraction, GovernorTimelockControl {
-    constructor(IVotes _token, TimelockController _timelock)
-        Governor(ERC20Votes.getPastTotalSupply, "KalaKrutGovernor")
-        GovernorVotes(_token)
-        GovernorVotesQuorumFraction(4)
-        GovernorTimelockControl(_timelock) {}
-}`,
+        content: `contract KalaKrutGovernor is Governor, GovernorVotes, GovernorVotesQuorumFraction, GovernorTimelockControl {\n    constructor(IVotes _token, TimelockController _timelock)\n        Governor(ERC20Votes.getPastTotalSupply, "KalaKrutGovernor")\n        GovernorVotes(_token)\n        GovernorVotesQuorumFraction(4)\n        GovernorTimelockControl(_timelock) {}\n}`,
         lastEditedBy: 'Admin',
         version: 1,
         status: 'Published',
@@ -742,13 +783,7 @@ export const MOCK_CONTRACTS: SmartContractDraft[] = [
     {
         id: 'scd-004',
         contractType: 'Treasury',
-        content: `contract Treasury {
-    address public owner;
-    constructor() {
-        owner = msg.sender;
-    }
-    // Additional treasury logic here
-}`,
+        content: `contract Treasury {\n    address public owner;\n    constructor() {\n        owner = msg.sender;\n    }\n    // Additional treasury logic here\n}`,
         lastEditedBy: 'Admin',
         version: 1,
         status: 'Published',
@@ -757,9 +792,7 @@ export const MOCK_CONTRACTS: SmartContractDraft[] = [
     {
         id: 'scd-005',
         contractType: 'KalaKrutNFT',
-        content: `contract KalaKrutNFT is ERC721, Ownable {
-    constructor(string memory name, string memory symbol) ERC721(name, symbol) {}
-}`,
+        content: `contract KalaKrutNFT is ERC721, Ownable {\n    constructor(string memory name, string memory symbol) ERC721(name, symbol) {}\n}`,
         lastEditedBy: 'Admin',
         version: 1,
         status: 'Published',
@@ -768,11 +801,7 @@ export const MOCK_CONTRACTS: SmartContractDraft[] = [
     {
         id: 'scd-006',
         contractType: 'EventTicket',
-        content: `contract EventTicket is ERC721, Ownable {
-    constructor(string memory uri) ERC721("EventTicket", "EVT") {
-        _safeMint(msg.sender, 1, uri);
-    }
-}`,
+        content: `contract EventTicket is ERC721, Ownable {\n    constructor(string memory uri) ERC721("EventTicket", "EVT") {\n        _safeMint(msg.sender, 1, uri);\n    }\n}`,
         lastEditedBy: 'Admin',
         version: 1,
         status: 'Published',
@@ -781,12 +810,7 @@ export const MOCK_CONTRACTS: SmartContractDraft[] = [
     {
         id: 'scd-007',
         contractType: 'Fractionalizer',
-        content: `contract Fractionalizer is ERC20, Ownable {
-    constructor(string memory name, string memory symbol, address nftContract, uint256 nftId, uint256 totalSupply)
-        ERC20(name, symbol) {
-        // Logic to fractionalize the NFT
-    }
-}`,
+        content: `contract Fractionalizer is ERC20, Ownable {\n    constructor(string memory name, string memory symbol, address nftContract, uint256 nftId, uint256 totalSupply)\n        ERC20(name, symbol) {\n        // Logic to fractionalize the NFT\n    }\n}`,
         lastEditedBy: 'Admin',
         version: 1,
         status: 'Published',
@@ -795,14 +819,7 @@ export const MOCK_CONTRACTS: SmartContractDraft[] = [
     {
         id: 'scd-008',
         contractType: 'Escrow',
-        content: `contract Escrow {
-    address public beneficiary;
-    address public arbiter;
-    constructor(address _beneficiary, address _arbiter) {
-        beneficiary = _beneficiary;
-        arbiter = _arbiter;
-    }
-}`,
+        content: `contract Escrow {\n    address public beneficiary;\n    address public arbiter;\n    constructor(address _beneficiary, address _arbiter) {\n        beneficiary = _beneficiary;\n        arbiter = _arbiter;\n    }\n}`,
         lastEditedBy: 'Admin',
         version: 1,
         status: 'Published',
@@ -811,22 +828,77 @@ export const MOCK_CONTRACTS: SmartContractDraft[] = [
     {
         id: 'scd-009',
         contractType: 'ServiceAgreement',
-        content: `contract ServiceAgreement is ReentrancyGuard {
-    address public provider; // The address of the service provider
-    address public client;   // The address of the client
-    address public arbiter;  // The address of the arbiter for dispute resolution
-
-    uint256 public paymentAmount; // The agreed payment amount in wei
-    string public terms;          // The terms of the service agreement
-
-    enum State { Created, Funded, Completed, Cancelled, InDispute }
-    State public currentState;
-
-    // ... (rest of the contract code) ...
-}`,
+        content: `contract ServiceAgreement is ReentrancyGuard {\n    address public provider; // The address of the service provider\n    address public client;   // The address of the client\n    address public arbiter;  // The address of the arbiter for dispute resolution\n
+    uint256 public paymentAmount; // The agreed payment amount in wei\n    string public terms;          // The terms of the service agreement\n
+    enum State { Created, Funded, Completed, Cancelled, InDispute }\n    State public currentState;\n
+    // ... (rest of the contract code) ...\n}`,
         lastEditedBy: 'Admin',
         version: 1,
         status: 'Published',
         parameters: ['provider', 'client', 'arbiter', 'terms', 'paymentAmount'],
     },
 ];
+
+export const MOCK_TRANSACTIONS: Transaction[] = [
+  {
+    id: 'txn-1',
+    date: '2023-10-24T10:00:00Z',
+    description: 'Ticket Purchase: Luna Eclipse Live',
+    amount: -25.00,
+    currency: 'USD',
+    status: 'Completed',
+  },
+  {
+    id: 'txn-2',
+    date: '2023-10-22T14:30:00Z',
+    description: 'Merch Sale: Neon Nights T-Shirt',
+    amount: 35.00,
+    currency: 'USD',
+    status: 'Completed',
+  },
+  {
+    id: 'txn-3',
+    date: '2023-10-20T18:00:00Z',
+    description: 'Gig Payout: The Warehouse Performance',
+    amount: 250.00,
+    currency: 'USD',
+    status: 'Completed',
+  },
+    {
+    id: 'txn-4',
+    date: '2023-10-19T12:00:00Z',
+    description: 'Service Fee: Graphic Design',
+    amount: -75.00,
+    currency: 'USD',
+    status: 'Completed',
+  },
+  {
+    id: 'txn-5',
+    date: '2023-10-18T09:00:00Z',
+    description: 'Subscription: Kalakrut Pro',
+    amount: -15.00,
+    currency: 'USD',
+    status: 'Completed',
+  }
+];
+
+export const MOCK_GIGS: Gig[] = [
+    {
+        id: 'gig-1',
+        artistId: 'u_artist',
+        venueId: 'u_venue',
+        title: 'Luna Eclipse Live at The Warehouse',
+    },
+    {
+        id: 'gig-2',
+        artistId: 'r4',
+        venueId: 'u_venue',
+        title: 'DJ Quantum Presents: Berlin Beats',
+    },
+    {
+        id: 'gig-3',
+        artistId: 'u_dao_gov',
+        venueId: 'u_venue',
+        title: 'DAO Governance Summit',
+    },
+]

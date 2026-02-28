@@ -33,6 +33,7 @@ import {
   Milestone,
   SmartContractDraft,
 } from '../types';
+import { ItemStatus } from '@/types/types';
 import {
   checkContentForViolation,
   MODERATION_WARNING_TEXT,

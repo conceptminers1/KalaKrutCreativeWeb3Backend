@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Proposal, UserRole } from '../types';
+import { ItemStatus } from '@/types/types';
 import { Artist } from '../data/knowledgeGraphSchema';
 import { MOCK_PROPOSALS } from '../mockData';
 import {

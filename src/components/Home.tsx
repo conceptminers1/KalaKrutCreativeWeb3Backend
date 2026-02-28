@@ -165,34 +165,26 @@ const LinktreeIcon = ({ className }: { className?: string }) => (
 
 const Home: React.FC<HomeProps> = ({ onLogin, onViewNews, onJoin, isLoggingIn }) => {
   const { notify } = useToast();
-  const { users, stats, setDemoMode, isDemoMode, demoModeAvailable } =
-    useData();
+  const { users, stats } = useData();
   const [isPending, startTransition] = useTransition();
   const [selectedRoleForLogin, setSelectedRoleForLogin] =
     useState<UserRole | null>(null);
   const [showMembersPreview, setShowMembersPreview] = useState(false);
 
-  // Login Form State for Live Mode
+  // Login Form State
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
-  // Local state for the modal toggle before confirming login.
-  const [loginMode, setLoginMode] = useState<'demo' | 'live'>(
-    demoModeAvailable && isDemoMode ? 'demo' : 'live'
-  );
 
   const previewMembers = users.slice(0, 5);
 
   const handleLoginClick = (method: 'web2' | 'web3') => {
     if (selectedRoleForLogin) {
-      if (loginMode === 'live' && method === 'web2' && (!email || !password)) {
-        notify('Please enter email and password for Live access.', 'warning');
+      if (method === 'web2' && (!email || !password)) {
+        notify('Please enter email and password.', 'warning');
         return;
       }
 
-      // Using startTransition to prevent suspension errors during view swaps
       startTransition(() => {
-        setDemoMode(loginMode === 'demo');
         onLogin(selectedRoleForLogin, method, { email, password });
       });
     }
@@ -256,7 +248,7 @@ const Home: React.FC<HomeProps> = ({ onLogin, onViewNews, onJoin, isLoggingIn })
         <div className="max-w-4xl mx-auto px-6 pt-16 pb-16 text-center">
            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
            <span className="text-white">The Future of </span>
-           <span className="bg-clip-text text-transparent bg-linear-to-r from-cyan-400 via-blue-500 to-purple-600">
+            <span className="bg-clip-text text-transparent bg-linear-to-r from-cyan-400 via-blue-500 to-purple-600">
            Creative Business
            </span>
            </h1>
@@ -277,34 +269,6 @@ const Home: React.FC<HomeProps> = ({ onLogin, onViewNews, onJoin, isLoggingIn })
             <span className="flex items-center gap-2 bg-kala-800 px-3 py-1 rounded-full border border-kala-700">
               <Coins className="w-4 h-4 text-yellow-400" /> Crypto & Fiat
             </span>
-          </div>
-
-          {/* Modes Info */}
-          <div className="flex flex-wrap justify-center gap-4 mb-8">
-            <div className="flex items-center gap-3 bg-kala-800/60 border border-kala-700 px-5 py-3 rounded-xl backdrop-blur-sm">
-              <div className="p-2 bg-kala-secondary/20 rounded-full text-kala-secondary">
-                <PlayCircle className="w-4 h-4" />
-              </div>
-              <div className="text-left">
-                <div className="text-[10px] text-kala-400 font-bold uppercase tracking-wider">
-                  Demo Mode
-                </div>
-                <div className="text-xs text-white">
-                  Explore working examples
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 bg-kala-800/60 border border-kala-700 px-5 py-3 rounded-xl backdrop-blur-sm">
-              <div className="p-2 bg-green-500/20 rounded-full text-green-400">
-                <Radio className="w-4 h-4" />
-              </div>
-              <div className="text-left">
-                <div className="text-[10px] text-kala-400 font-bold uppercase tracking-wider">
-                  Live Mode
-                </div>
-                <div className="text-xs text-white">Real activities</div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -594,7 +558,7 @@ const Home: React.FC<HomeProps> = ({ onLogin, onViewNews, onJoin, isLoggingIn })
         </div>
       </footer>
 
-      {/* Dual Login Modal */}
+      {/* Login Modal */}
       {selectedRoleForLogin && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in">
           <div className="bg-kala-900 border border-kala-700 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl relative">
@@ -612,49 +576,6 @@ const Home: React.FC<HomeProps> = ({ onLogin, onViewNews, onJoin, isLoggingIn })
               </h2>
               <p className="text-kala-400">
                 Choose your authentication method to enter KalaKrut.
-              </p>
-
-              {/* MODE TOGGLE */}
-              {demoModeAvailable && (
-                <div className="flex justify-center mt-6">
-                  <div className="bg-kala-800 p-1 rounded-lg inline-flex relative">
-                    <button
-                      onClick={() => {
-                        setLoginMode('demo');
-                        setEmail('');
-                        setPassword('');
-                      }}
-                      className={`relative z-10 px-4 py-2 rounded-md text-xs font-bold transition-all flex items-center gap-2 ${
-                        loginMode === 'demo'
-                          ? 'bg-kala-secondary text-kala-900 shadow'
-                          : 'text-kala-400 hover:text-white'
-                      }`}
-                    >
-                      <PlayCircle className="w-3 h-3" /> Demo Mode
-                    </button>
-                    <button
-                      onClick={() => {
-                        setLoginMode('live');
-                        setEmail('');
-                        setPassword('');
-                      }}
-                      className={`relative z-10 px-4 py-2 rounded-md text-xs font-bold transition-all flex items-center gap-2 ${
-                        loginMode === 'live'
-                          ? 'bg-green-500 text-white shadow'
-                          : 'text-kala-400 hover:text-white'
-                      }`}
-                    >
-                      <Radio className="w-3 h-3" /> Live Mode
-                    </button>
-                  </div>
-                </div>
-              )}
-              <p className="text-[10px] text-kala-500 mt-2">
-                {demoModeAvailable
-                  ? loginMode === 'demo'
-                    ? 'Pre-loaded with sample data for evaluation.'
-                    : 'Production environment. Real transactions only.'
-                  : 'Production Environment (Demo Mode Disabled by Admin)'}
               </p>
             </div>
 
@@ -693,67 +614,40 @@ const Home: React.FC<HomeProps> = ({ onLogin, onViewNews, onJoin, isLoggingIn })
                   Email & Password
                 </h3>
                 <p className="text-xs text-kala-400 text-center mb-6 h-10">
-                  {loginMode === 'demo'
-                    ? 'Login as Example User: ' + selectedRoleForLogin
-                    : 'Standard login for real user access.'}
+                  Standard login for real user access.
                 </p>
 
-                {loginMode === 'live' ? (
-                  <div className="w-full space-y-3">
-                    <input
-                      type="email"
-                      placeholder="Email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full bg-kala-900 border border-kala-700 rounded px-3 py-2 text-sm text-white focus:border-kala-secondary outline-none"
-                    />
-                    <input
-                      type="password"
-                      placeholder="Password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full bg-kala-900 border border-kala-700 rounded px-3 py-2 text-sm text-white focus:border-kala-secondary outline-none"
-                    />
-                    {/* Live Mode Admin Hint - visible only if Admin role selected */}
-                    {selectedRoleForLogin === UserRole.ADMIN && (
-                      <div className="text-[9px] text-kala-500 bg-kala-900 p-2 rounded border border-kala-700 flex items-center gap-2">
-                        <KeyRound className="w-3 h-3 text-kala-secondary" />
-                        <span>
-                          Default: <b>admin@kalakrut.io</b> / <b>(any)</b>
-                        </span>
-                      </div>
+                <div className="w-full space-y-3">
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full bg-kala-900 border border-kala-700 rounded px-3 py-2 text-sm text-white focus:border-kala-secondary outline-none"
+                  />
+                  <input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full bg-kala-900 border border-kala-700 rounded px-3 py-2 text-sm text-white focus:border-kala-secondary outline-none"
+                  />
+                  <div className="text-[9px] text-kala-500 bg-kala-900 p-2 rounded border border-kala-700 flex items-center gap-2">
+                     <Info className="w-3 h-3 text-kala-secondary" />
+                     <span>You must join and get your login credentials.</span>
+                  </div>
+                  <button
+                    onClick={() => handleLoginClick('web2')}
+                    disabled={isLoggingIn}
+                    className="w-full py-2 bg-kala-secondary hover:bg-cyan-400 text-kala-900 font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
+                  >
+                    {isLoggingIn ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      'Sign In'
                     )}
-                    <button
-                      onClick={() => handleLoginClick('web2')}
-                      disabled={isLoggingIn}
-                      className="w-full py-2 bg-kala-secondary hover:bg-cyan-400 text-kala-900 font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
-                    >
-                      {isLoggingIn ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        'Sign In'
-                      )}
-                    </button>
-                  </div>
-                ) : (
-                  /* Demo Mode Mock Button */
-                  <div className="w-full space-y-3">
-                    <div className="bg-kala-900/50 border border-kala-700 p-3 rounded text-center text-xs text-kala-400">
-                      Simulated Environment Active
-                    </div>
-                    <button
-                      onClick={() => handleLoginClick('web2')}
-                      disabled={isLoggingIn}
-                      className="w-full py-2 bg-kala-secondary hover:bg-cyan-400 text-kala-900 font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
-                    >
-                      {isLoggingIn ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        `Enter as ${selectedRoleForLogin} (Demo)`
-                      )}
-                    </button>
-                  </div>
-                )}
+                  </button>
+                </div>
               </div>
             </div>
 

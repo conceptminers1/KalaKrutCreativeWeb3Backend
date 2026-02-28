@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { knowledgeGraph } from '../services/knowledgeGraphService';
 import PaymentGateway from '../components/PaymentGateway';
@@ -15,9 +16,12 @@ import {
   Layers,
   Search,
   ShieldAlert,
+  BarChart2,
 } from 'lucide-react';
 import { useToast } from '../contexts/ToastContext';
 import UrgentBookingForm from './UrgentBookingForm'; // Import the new form
+import { Button } from './ui/Button';
+import { ItemStatus } from '@/types/types';
 
 interface RosterProps {
   onNavigate: (view: string) => void;
@@ -80,32 +84,38 @@ const Roster: React.FC<RosterProps> = ({ onNavigate, onViewProfile }) => {
             asset inventories.
           </p>
         </div>
-        {!isSubscribed && (
-          <div className="bg-gradient-to-r from-amber-500/20 to-yellow-600/20 border border-yellow-500/30 rounded-lg p-3 flex items-center gap-3">
-            <div className="p-2 bg-yellow-500/20 rounded-full text-yellow-400">
-              <Lock className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="text-sm font-bold text-yellow-200">
-                Guest Access
+        <div className="flex items-center space-x-2">
+            <Button variant="outline" onClick={() => onNavigate('roster_analytics')}>
+                <BarChart2 className="w-4 h-4 mr-2"/>
+                View Analytics
+            </Button>
+            {!isSubscribed && (
+              <div className="bg-gradient-to-r from-amber-500/20 to-yellow-600/20 border border-yellow-500/30 rounded-lg p-3 flex items-center gap-3">
+                <div className="p-2 bg-yellow-500/20 rounded-full text-yellow-400">
+                  <Lock className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-yellow-200">
+                    Guest Access
+                  </div>
+                  <div className="text-xs text-yellow-200/70">
+                    Subscribe to view ratings & contact info
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowPayment(true)}
+                  className="px-3 py-1.5 bg-yellow-500 hover:bg-yellow-400 text-kala-900 text-xs font-bold rounded transition-colors ml-2"
+                >
+                  Subscribe Now
+                </button>
               </div>
-              <div className="text-xs text-yellow-200/70">
-                Subscribe to view ratings & contact info
+            )}
+            {isSubscribed && (
+              <div className="bg-green-500/10 border border-green-500/30 rounded-lg px-4 py-2 flex items-center gap-2 text-green-400 text-sm font-bold">
+                <Unlock className="w-4 h-4" /> Premium Access Unlocked
               </div>
-            </div>
-            <button
-              onClick={() => setShowPayment(true)}
-              className="px-3 py-1.5 bg-yellow-500 hover:bg-yellow-400 text-kala-900 text-xs font-bold rounded transition-colors ml-2"
-            >
-              Subscribe Now
-            </button>
-          </div>
-        )}
-        {isSubscribed && (
-          <div className="bg-green-500/10 border border-green-500/30 rounded-lg px-4 py-2 flex items-center gap-2 text-green-400 text-sm font-bold">
-            <Unlock className="w-4 h-4" /> Premium Access Unlocked
-          </div>
-        )}
+            )}
+        </div>
       </div>
 
       {/* Search */}
