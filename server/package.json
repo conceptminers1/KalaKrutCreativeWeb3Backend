@@ -4,9 +4,10 @@
         "type": "module",
         "main": "src/index.js",
         "scripts": {
-          "test": "echo "Error: no test specified" && exit 1",
+          "test": "echo \"Error: no test specified\" && exit 1",
           "start": "node src/index.js",
           "dev": "nodemon src/index.js",
+          "build": "npx prisma migrate deploy && npx prisma generate",
           "gcp-build": "npx prisma migrate deploy && npx prisma generate"
         },
         "keywords": [],
@@ -15,14 +16,14 @@
         "description": "",
         "dependencies": {
           "@prisma/client": "5.17.0",
-          "bcrypt": "^5.1.1",
+          "bcryptjs": "^2.4.3",
           "cors": "^2.8.6",
           "dotenv": "^16.4.5",
           "express": "^4.19.2",
           "pg": "^8.11.3"
         },
         "devDependencies": {
-          "@types/bcrypt": "^5.0.2",
+          "@types/bcryptjs": "^2.4.6",
           "dotenv-cli": "^7.4.2",
           "nodemon": "^3.1.0",
           "prisma": "5.17.0"

@@ -60,7 +60,7 @@ app.get('/', (req, res) => {
 
 // Start the server
 const host = '0.0.0.0';
-const port = process.env.PORT || 8081;
+const port = process.env.PORT || 8080;
 
 app.listen(port, host, () => {
   console.log(`Server is listening on ${host}:${port}`);

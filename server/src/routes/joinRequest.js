@@ -1,6 +1,6 @@
 import express from 'express';
 import pkg from '../generated/client/index.js'; const { PrismaClient } = pkg;
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 const router = express.Router();
