@@ -8,7 +8,7 @@
           "start": "node src/index.js",
           "dev": "nodemon src/index.js",
           "build": "npx prisma migrate deploy && npx prisma generate",
-          "gcp-build": "npx prisma migrate deploy && npx prisma generate"
+          "gcp-build": "npm install && npx prisma migrate deploy && npx prisma generate"
         },
         "keywords": [],
         "author": "",
