@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { X, ArrowDown, RefreshCw, Loader2, Coins, Wallet } from 'lucide-react';
 import { useWallet, Balances } from '../contexts/WalletContext';
@@ -23,6 +24,7 @@ const TokenExchange: React.FC<TokenExchangeProps> = ({ onClose }) => {
   };
 
   const getExchangeRate = () => {
+    if (!RATES[fromCurrency] || !RATES[toCurrency]) return 0;
     const rate = RATES[fromCurrency] / RATES[toCurrency];
     return rate;
   };
@@ -34,7 +36,7 @@ const TokenExchange: React.FC<TokenExchangeProps> = ({ onClose }) => {
   const handleSwap = async () => {
     const val = parseFloat(amount);
     if (!val || val <= 0) return;
-    if (val > balances[fromCurrency]) {
+    if (balances?.[fromCurrency] === undefined || val > balances[fromCurrency]) {
       notify(`Insufficient ${fromCurrency.toUpperCase()} balance.`, 'error');
       return;
     }
@@ -74,7 +76,7 @@ const TokenExchange: React.FC<TokenExchangeProps> = ({ onClose }) => {
           <div className="bg-kala-800 p-4 rounded-xl border border-kala-700">
             <div className="flex justify-between text-xs text-kala-400 mb-2">
               <span>Pay with</span>
-              <span>Balance: {balances[fromCurrency].toFixed(4)}</span>
+              <span>Balance: {balances?.[fromCurrency]?.toFixed(4) ?? '0.00'}</span>
             </div>
             <div className="flex items-center gap-2">
               <input
@@ -112,7 +114,7 @@ const TokenExchange: React.FC<TokenExchangeProps> = ({ onClose }) => {
           <div className="bg-kala-800 p-4 rounded-xl border border-kala-700">
             <div className="flex justify-between text-xs text-kala-400 mb-2">
               <span>Receive (Est.)</span>
-              <span>Balance: {balances[toCurrency].toFixed(4)}</span>
+              <span>Balance: {balances?.[toCurrency]?.toFixed(4) ?? '0.00'}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-full text-2xl font-bold text-kala-secondary">

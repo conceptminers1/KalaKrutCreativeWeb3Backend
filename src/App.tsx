@@ -5,7 +5,7 @@ import Home from '@/components/Home';
 import Dashboard from '@/components/Dashboard';
 import { WalletProvider, useWallet } from '@/contexts/WalletContext';
 import { ToastProvider, useToast } from '@/contexts/ToastContext';
-import { DataProvider, useData } from '@/contexts/DataContext';
+import { DataProvider, useData, transformRosterMemberToArtistProfile } from '@/contexts/DataContext';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import {
@@ -157,15 +157,18 @@ const BlockedScreen: React.FC<{ onAppeal: (reason: string) => void }> = ({
   );
 };
 
-const AppContent: React.FC = () => {
+interface AppContentProps {
+  currentUser: IArtistProfile | null;
+  setCurrentUser: React.Dispatch<React.SetStateAction<IArtistProfile | null>>;
+}
+
+const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) => {
   const [isPending, startTransition] = useTransition();
   const [currentView, setCurrentView] = useState('home');
   const [activeTableView, setActiveTableView] = useState(''); 
   const [currentUserRole, setCurrentUserRole] = useState<UserRole>(
     UserRole.GUEST
   );
-  const [currentUser, setCurrentUser] = useState<IArtistProfile | null>(null);
-  const [isAppLoggedIn, setIsAppLoggedIn] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [chatRecipient, setChatRecipient] = useState(MOCK_ARTIST_PROFILE);
@@ -263,10 +266,10 @@ const AppContent: React.FC = () => {
       }
     };
 
-    if (isAppLoggedIn && (currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN_LIVE)) {
+    if (currentUser && (currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN_LIVE)) {
       fetchOnboardingRequests();
     }
-  }, [isAppLoggedIn, currentUserRole, notify]);
+  }, [currentUser, currentUserRole, notify]);
 
 
   const handleLogin = async (
@@ -280,17 +283,20 @@ const AppContent: React.FC = () => {
     }
 
     setIsLoggingIn(true);
-    let targetUser: any;
+    let userToLogin: IArtistProfile | null = null;
 
     if (method === 'web3') {
-      targetUser = findUserByWallet(walletAddress!); 
+        const rosterUser = findUserByWallet(walletAddress!);
+        if (rosterUser) {
+            userToLogin = transformRosterMemberToArtistProfile(rosterUser, MOCK_ARTIST_PROFILE);
+        }
     } else { 
       if (
         credentials?.email === 'bhoominpandya@gmail.com' &&
         credentials?.password === 'Creatkala!2'
       ) {
         notify(`Bypassing live login for test role: ${role}`, 'info');
-        targetUser = MOCK_USERS_BY_ROLE[role!] || MOCK_ARTIST_PROFILE;
+        userToLogin = MOCK_USERS_BY_ROLE[role!] || MOCK_ARTIST_PROFILE;
       } else {
         try {
           const response = await fetch('http://localhost:3001/api/login', {
@@ -304,7 +310,7 @@ const AppContent: React.FC = () => {
             setIsLoggingIn(false);
             return;
           }
-          targetUser = data.user;
+          userToLogin = data.user;
         } catch (error) {
           notify('Login request failed. Is the server running?', 'error');
           setIsLoggingIn(false);
@@ -313,7 +319,7 @@ const AppContent: React.FC = () => {
       }
     }
 
-    if (!targetUser) {
+    if (!userToLogin) {
       if (method === 'web3') {
         notify('Wallet connected, but no user found. Please register.', 'info');
         navigate('join_request'); 
@@ -324,23 +330,22 @@ const AppContent: React.FC = () => {
       return;
     }
 
-    if ((targetUser.role === UserRole.ADMIN || targetUser.role === UserRole.SYSTEM_ADMIN_LIVE) && method === 'web3') {
+    if ((userToLogin.role === UserRole.ADMIN || userToLogin.role === UserRole.SYSTEM_ADMIN_LIVE) && method === 'web3') {
       notify('Admin-level roles may not use wallet-based login for security reasons.', 'error');
       setIsLoggingIn(false);
       return;
     }
 
-    setCurrentUserRole(targetUser.role);
-    setCurrentUser(targetUser as IArtistProfile);
-    setSelectedProfile(targetUser as IArtistProfile);
-    setIsAppLoggedIn(true);
+    setCurrentUserRole(userToLogin.role);
+    setCurrentUser(userToLogin);
+    setSelectedProfile(userToLogin);
     setIsUserBlocked(false);
 
     startTransition(() => {
       setCurrentView('dashboard');
     });
 
-    notify(`Welcome back, ${targetUser.name}!`, 'info');
+    notify(`Welcome back, ${userToLogin.name}!`, 'info');
     setIsLoggingIn(false);
   };
 
@@ -494,7 +499,6 @@ const AppContent: React.FC = () => {
   };
 
   const handleLogout = () => {
-    setIsAppLoggedIn(false);
     setCurrentUser(null);
     setCurrentUserRole(UserRole.GUEST);
     setSelectedProfile(MOCK_ARTIST_PROFILE);
@@ -636,7 +640,7 @@ const AppContent: React.FC = () => {
   };
 
   const renderAppContent = () => {
-    if (!isAppLoggedIn || !currentUser) {
+    if (!currentUser) {
       return <PageLoader />;
     }
     return (
@@ -830,7 +834,7 @@ const AppContent: React.FC = () => {
   if (isUserBlocked) {
     return <BlockedScreen onAppeal={handleAppeal} />;
   }
-  if (!isAppLoggedIn) {
+  if (!currentUser) {
     if (currentView === 'announcements_public') {
       return (
           <Announcements onBack={() => navigate('home')} />
@@ -904,7 +908,7 @@ const App: React.FC = () => {
         <WalletProvider>
           <DataProvider currentUserId={currentUser?.id}>
             <AuthProvider>
-              <AppContent />
+              <AppContent currentUser={currentUser} setCurrentUser={setCurrentUser} />
             </AuthProvider>
           </DataProvider>
         </WalletProvider>

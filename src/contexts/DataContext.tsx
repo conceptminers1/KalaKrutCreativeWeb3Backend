@@ -20,6 +20,7 @@ import {
   MOCK_ROSTER,
   MOCK_MARKETPLACE_ITEMS,
   MOCK_PROPOSALS,
+  MOCK_ARTIST_PROFILE,
 } from '../mockData';
 
 export interface DataContextType {
@@ -62,6 +63,32 @@ export const useData = () => {
     throw new Error('useData must be used within a DataProvider');
   }
   return context;
+};
+
+export const transformRosterMemberToArtistProfile = (
+  rosterMember: RosterMember,
+  fallbackProfile: ArtistProfile
+): ArtistProfile => {
+  return {
+    ...fallbackProfile,
+    id: rosterMember.id,
+    name: rosterMember.name,
+    role: rosterMember.role,
+    avatar: rosterMember.avatar,
+    location: rosterMember.location,
+    verified: rosterMember.verified,
+    walletAddress: rosterMember.walletAddress,
+    email: rosterMember.subscriberOnly?.email || '',
+    bio: `A member of the KalaKrut community since ${new Date().getFullYear()}.`,
+    coverImage: `https://picsum.photos/seed/${rosterMember.id}/1200/400`,
+    genres: fallbackProfile.genres,
+    pressKit: fallbackProfile.pressKit,
+    stats: fallbackProfile.stats,
+    xp: fallbackProfile.xp,
+    level: fallbackProfile.level,
+    leadStatus: 'Converted',
+    status: ApprovalStatus.APPROVED
+  };
 };
 
 const tagMocks = (data: any[]) =>

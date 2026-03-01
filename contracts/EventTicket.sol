@@ -2,14 +2,18 @@
 pragma solidity ^0.8.24;
 
 import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import {ERC1155Burnable} from "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Burnable.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 
 /**
  * @title EventTicket
- * @dev An ERC1155 contract for creating and managing event tickets.
+ * @dev A secure, pausable, and burnable ERC1155 contract for event tickets.
  * Allows for multiple tiers of tickets (e.g., General, VIP).
+ * - Inherits from ERC1155Burnable to allow token holders to burn their own tickets.
+ * - Inherits from Pausable to allow the owner to halt all activity in an emergency.
  */
-contract EventTicket is ERC1155, Ownable {
+contract EventTicket is ERC1155, Ownable, Pausable, ERC1155Burnable {
     // A mapping from ticket tier ID to the total supply of that tier
     mapping(uint256 => uint256) public tierSupply;
 
@@ -42,10 +46,9 @@ contract EventTicket is ERC1155, Ownable {
     /**
      * @dev Allows a venue to check in a ticket for a specific holder.
      * This prevents the same ticket from being used multiple times.
-     * For simplicity, only the contract owner can check in tickets.
-     * In a real-world scenario, you might have a separate "checker" role.
+     * This function is pausable.
      */
-    function checkInTicket(address holder, uint256 id) public onlyOwner {
+    function checkInTicket(address holder, uint256 id) public onlyOwner whenNotPaused {
         require(balanceOf(holder, id) > 0, "Holder does not own this ticket");
         require(!checkedIn[id][holder], "Ticket already checked in");
         checkedIn[id][holder] = true;
@@ -60,5 +63,34 @@ contract EventTicket is ERC1155, Ownable {
         for (uint i = 0; i < ids.length; ++i) {
             tierSupply[ids[i]] += amounts[i];
         }
+    }
+
+    /**
+     * @dev Pauses all token transfers and check-ins.
+     */
+    function pause() public onlyOwner {
+        _pause();
+    }
+
+    /**
+     * @dev Unpauses all token transfers and check-ins.
+     */
+    function unpause() public onlyOwner {
+        _unpause();
+    }
+
+    /**
+     * @dev Hook that is called before any token transfer, including minting and burning.
+     * Overridden to prevent all token movements when the contract is paused.
+     */
+    function _beforeTokenTransfer(
+        address operator,
+        address from,
+        address to,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        bytes memory data
+    ) internal override(ERC1155, ERC1155Burnable) whenNotPaused {
+        super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
     }
 }

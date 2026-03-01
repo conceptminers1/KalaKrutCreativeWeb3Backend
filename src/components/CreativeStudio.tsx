@@ -10,7 +10,6 @@ import {
   Sparkles,
   Wand2,
   Search,
-  Share2,
   Save,
   Trash2,
   PlusCircle,
@@ -22,6 +21,9 @@ import {
   Wallet,
   ShieldAlert,
   Image as ImageIcon,
+  X,
+  Network,
+  Info,
 } from 'lucide-react';
 import { useDrag, useDrop, DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -34,6 +36,97 @@ import {
   checkContentForViolation,
   MODERATION_WARNING_TEXT,
 } from '../services/moderationService';
+
+// --- Mint Confirmation Modal ---
+interface MintConfirmationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  asset: IPFSAsset | null;
+  networkName?: string;
+}
+
+const MintConfirmationModal: React.FC<MintConfirmationModalProps> = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  asset,
+  networkName,
+}) => {
+  if (!isOpen || !asset) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        className="bg-kala-950 border border-kala-800 rounded-2xl p-8 w-full max-w-lg shadow-2xl"
+      >
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+            <Sparkles className="text-kala-secondary" />
+            Confirm Mint
+          </h2>
+          <button onClick={onClose} className="text-kala-500 hover:text-white">
+            <X size={24} />
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          <div className="bg-kala-900 p-4 rounded-lg border border-kala-800">
+            <h3 className="font-semibold text-white mb-2">Asset Details</h3>
+            <p className="text-sm text-kala-300 break-words"><strong>Name:</strong> {asset.name}</p>
+            <p className="text-sm text-kala-400"><strong>Type:</strong> {asset.type} ({asset.size})</p>
+            <p className="text-sm text-kala-500 font-mono text-xs mt-1 break-all"><strong>CID:</strong> {asset.cid}</p>
+          </div>
+
+          <div className="bg-kala-900 p-4 rounded-lg border border-kala-800">
+            <h3 className="font-semibold text-white mb-2">Transaction Details</h3>
+             <div className="flex items-center gap-3 mb-2">
+                <Network className="w-5 h-5 text-kala-secondary" />
+                <div>
+                    <p className="text-sm font-bold text-kala-200">Network</p>
+                    <p className="text-sm text-kala-300">{networkName || 'Unknown'}</p>
+                </div>
+            </div>
+            {networkName !== 'Sepolia' && (
+              <div className="bg-yellow-900/30 border border-yellow-500/50 rounded-lg p-3 flex items-start gap-3 mt-3">
+                <ShieldAlert className="w-5 h-5 text-yellow-400 shrink-0 mt-0.5" />
+                <p className="text-xs text-yellow-200">
+                  Warning: This app is configured for the Sepolia testnet. Transactions on other networks may fail or result in loss of funds.
+                </p>
+              </div>
+            )}
+            <div className="flex items-center gap-3 mt-3">
+                <Info className="w-5 h-5 text-kala-secondary" />
+                <div>
+                    <p className="text-sm font-bold text-kala-200">Estimated Gas Fee</p>
+                    <p className="text-sm text-kala-300">~0.005 ETH (placeholder)</p>
+                </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-8 flex justify-end gap-4">
+          <button
+            onClick={onClose}
+            className="px-6 py-2 bg-kala-800 text-white font-semibold rounded-lg hover:bg-kala-700 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-6 py-2 bg-kala-secondary text-white font-bold rounded-lg hover:bg-cyan-400 transition-colors shadow-[0_0_20px_rgba(56,189,248,0.3)]"
+          >
+            Confirm Mint
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
 
 interface CreativeStudioProps {
   onBack: () => void;
@@ -97,12 +190,18 @@ const CreativeStudio: React.FC<CreativeStudioProps> = ({
   // State from old version
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const { isConnected } = useWallet();
+  const { isConnected, provider } = useWallet();
   const { open } = useWeb3Modal();
+  const [networkName, setNetworkName] = useState<string | undefined>();
+  
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedAsset, setSelectedAsset] = useState<IPFSAsset | null>(null);
+
 
   const [assets, setAssets] = useState<IPFSAsset[]>([
     {
-      id: '1',
+      id: 'asset-1-force-refresh',
       name: 'Album_Artwork_Final.png',
       type: 'Image',
       size: '2.4 MB',
@@ -122,6 +221,17 @@ const CreativeStudio: React.FC<CreativeStudioProps> = ({
       timestamp: '2023-10-12 09:15',
     },
   ]);
+
+  // Get Network
+  React.useEffect(() => {
+    const getNetwork = async () => {
+      if (provider) {
+        const network = await provider.getNetwork();
+        setNetworkName(network.name);
+      }
+    };
+    getNetwork();
+  }, [provider]);
 
   // Drop handler for AI tools (from new version)
   const [, drop] = useDrop(() => ({
@@ -198,16 +308,35 @@ const CreativeStudio: React.FC<CreativeStudioProps> = ({
     }, 2500);
   };
 
-  const handleMint = async (assetId: string) => {
+  const handleMintRequest = (assetId: string) => {
+    const assetToMint = assets.find(a => a.id === assetId);
+    if(assetToMint) {
+      setSelectedAsset(assetToMint);
+      setIsModalOpen(true);
+    }
+  };
+  
+  const handleConfirmMint = async () => {
+    if (!selectedAsset) return;
+
     if (!isConnected) {
       notify('Please connect your wallet to Mint NFTs.', 'warning');
       await open();
       return;
     }
+
+    // Close modal and proceed
+    setIsModalOpen(false);
     notify('Minting transaction started...', 'info');
-    setAssets((prev) =>
-      prev.map((a) => (a.id === assetId ? { ...a, status: 'Minted' } : a))
-    );
+    
+    // Simulate minting delay and update UI
+    setTimeout(() => {
+      setAssets((prev) =>
+        prev.map((a) => (a.id === selectedAsset.id ? { ...a, status: 'Minted' } : a))
+      );
+      notify(`${selectedAsset.name} successfully minted!`, 'success');
+      setSelectedAsset(null);
+    }, 3000);
   };
 
   const tools: ToolProps[] = [
@@ -223,6 +352,13 @@ const CreativeStudio: React.FC<CreativeStudioProps> = ({
 
   return (
     <div className="min-h-screen bg-kala-900 text-white p-4 sm:p-6 md:p-8">
+      <MintConfirmationModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={handleConfirmMint}
+        asset={selectedAsset}
+        networkName={networkName}
+      />
       <div className="max-w-7xl mx-auto">
         {/* --- Merged Header --- */}
         <motion.div
@@ -368,8 +504,8 @@ const CreativeStudio: React.FC<CreativeStudioProps> = ({
                     </span>
                     {asset.status !== 'Minted' && (
                       <button
-                        onClick={() => handleMint(asset.id)}
-                        className={`text-xs text-kala-900 font-bold px-2 py-1 rounded transition-colors flex items-center gap-1 ${isConnected ? 'bg-kala-secondary hover:bg-cyan-400' : 'bg-kala-500 hover:bg-kala-400'}`}
+                        onClick={() => handleMintRequest(asset.id)}
+                        className={`text-xs text-white font-bold px-2 py-1 rounded transition-colors flex items-center gap-1 ${isConnected ? 'bg-kala-secondary hover:bg-cyan-400' : 'bg-kala-500 hover:bg-kala-400'}`}
                       >
                         {!isConnected && <Wallet className="w-3 h-3" />} Mint
                       </button>
