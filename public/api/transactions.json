@@ -1,0 +1,12 @@
+[
+  {
+    "id": "T001",
+    "date": "2024-07-29T10:00:00.000Z",
+    "description": "Artist Grant awarded to @CreativeGeniu",
+    "amount": 500,
+    "currency": "USD",
+    "status": "Completed",
+    "from": "KalaKrut Treasury",
+    "to": "user-artist-123"
+  }
+]

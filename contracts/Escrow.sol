@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
+pragma solidity ^0.8.20;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 /**
  * @title Escrow
@@ -30,7 +30,8 @@ contract Escrow is Ownable, ReentrancyGuard {
         address _payer,
         address _payee,
         address _initialOwner
-    ) Ownable(_initialOwner) {
+    ) {
+        _transferOwnership(_initialOwner);
         payer = _payer;
         payee = _payee;
         currentState = State.AwaitingPayment;

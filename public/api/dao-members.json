@@ -1,0 +1,35 @@
+[
+  {
+    "id": "dao-member-1",
+    "user": {
+      "id": "user-25",
+      "name": "TokenHolderX",
+      "email": "thx@dao.com"
+    },
+    "votingPower": 1500,
+    "joinedAt": "2023-08-15T10:00:00Z",
+    "verified": true
+  },
+  {
+    "id": "dao-member-2",
+    "user": {
+      "id": "user-26",
+      "name": "CryptoVoter",
+      "email": "voter@crypto.com"
+    },
+    "votingPower": 750,
+    "joinedAt": "2023-09-01T12:30:00Z",
+    "verified": true
+  },
+  {
+    "id": "dao-member-3",
+    "user": {
+      "id": "user-27",
+      "name": "NewbieDAO",
+      "email": "newbie@dao.com"
+    },
+    "votingPower": 100,
+    "joinedAt": "2024-01-20T18:00:00Z",
+    "verified": false
+  }
+]

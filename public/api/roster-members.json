@@ -1,0 +1,21 @@
+[
+  {
+    "id": "6",
+    "name": "DJ Groove",
+    "role": "Artist",
+    "avatar": "https://picsum.photos/seed/u6/200",
+    "location": "Miami, FL",
+    "verified": true,
+    "rating": 4.8,
+    "assets": {
+      "ips": 2,
+      "events": 10,
+      "services": 1,
+      "productions": 5,
+      "nfts": 3
+    },
+    "subscriberOnly": {
+      "email": "djgroove@example.com"
+    }
+  }
+]

@@ -1,0 +1,16 @@
+[
+  {
+    "id": "m-5",
+    "title": "Vintage Prophet-5 Synthesizer",
+    "price": 2500,
+    "currency": "USD",
+    "type": "Instrument",
+    "image": "https://picsum.photos/seed/m5/400/400",
+    "seller": {
+      "name": "StudioGear",
+      "avatar": "https://picsum.photos/seed/s5/50",
+      "verified": true
+    },
+    "isAuction": false
+  }
+]

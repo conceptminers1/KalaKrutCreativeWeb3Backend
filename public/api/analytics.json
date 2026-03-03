@@ -1,0 +1,19 @@
+{
+  "totalUsers": {"value": 4, "change": "+33%"},
+  "volume30d": {"value": "$3,750", "change": "+200%"},
+  "activeDaos": {"value": 2, "change": "+100%"},
+  "gigsBooked": {"value": 5, "change": "+25%"},
+  "userGrowth": [10, 20, 30, 50, 70, 100],
+  "recentTransactions": [
+    {
+      "description": "Ticket Sale: Synthwave Fest",
+      "time": "1 day ago",
+      "amount": "+0.2 ETH"
+    },
+    {
+      "description": "Marketplace Purchase: Vintage Synth",
+      "time": "3 days ago",
+      "amount": "-1.5 ETH"
+    }
+  ]
+}

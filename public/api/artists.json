@@ -1,0 +1,32 @@
+[
+  {
+    "id": "1",
+    "user": {
+      "id": "user-1",
+      "name": "RhythmicInnovator",
+      "email": "rhythmic.innovator@example.com"
+    },
+    "genre": "Electronic",
+    "bio": "Crafting beats that bridge worlds, from ambient soundscapes to driving techno."
+  },
+  {
+    "id": "2",
+    "user": {
+      "id": "user-2",
+      "name": "AcousticSoul",
+      "email": "acoustic.soul@example.com"
+    },
+    "genre": "Indie Folk",
+    "bio": "Barefoot and inspired, weaving tales of love and loss with a six-string and a story."
+  },
+  {
+    "id": "3",
+    "user": {
+      "id": "user-3",
+      "name": "SynthwaveDreamer",
+      "email": "synthwave.dreamer@example.com"
+    },
+    "genre": "Retrowave",
+    "bio": "Riding the neon grids of sound, inspired by 80s cinema and timeless melodies."
+  }
+]

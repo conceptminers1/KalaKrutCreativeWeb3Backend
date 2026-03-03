@@ -17,6 +17,8 @@ interface ServiceContractsProps {
 const ServiceContracts: React.FC<ServiceContractsProps> = ({ currentUser, contracts }) => {
   const [completionNotes, setCompletionNotes] = useState<{ [contractId: string]: string }>({});
 
+  console.log("ServiceContracts contracts:", contracts);
+
   const handleNoteChange = (contractId: string, note: string) => {
     setCompletionNotes(prev => ({ ...prev, [contractId]: note }));
   };
@@ -30,33 +32,39 @@ const ServiceContracts: React.FC<ServiceContractsProps> = ({ currentUser, contra
   const servicesProvided = contracts.filter(c => c.initiatorId === currentUser.id && c.contractType === ContractType.SERVICE);
   const servicesReceived = contracts.filter(c => c.parties.some(p => p.id === currentUser.id) && c.initiatorId !== currentUser.id && c.contractType === ContractType.SERVICE);
 
-  const renderContractRow = (contract: Contract) => (
-    <TableRow key={contract.id}>
-      <TableCell>{contract.title}</TableCell>
-      <TableCell>{contract.status}</TableCell>
-      <TableCell>
-        {contract.status !== ContractStatus.FULFILLED && (
-          <input
-            type="text"
-            placeholder="Add completion note..."
-            className="bg-kala-800 text-white p-2 rounded"
-            onChange={e => handleNoteChange(contract.id, e.target.value)}
-          />
-        )}
-        {contract.completionNote}
-      </TableCell>
-      <TableCell>
-        {contract.status !== ContractStatus.FULFILLED && (
-          <button
-            onClick={() => handleMarkAsComplete(contract.id)}
-            className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
-          >
-            Mark as Complete
-          </button>
-        )}
-      </TableCell>
-    </TableRow>
-  );
+  console.log("servicesProvided:", servicesProvided);
+  console.log("servicesReceived:", servicesReceived);
+
+  const renderContractRow = (contract: Contract) => {
+    console.log("Rendering contract:", contract);
+    return (
+      <TableRow key={contract.id}>
+        <TableCell>{contract.title}</TableCell>
+        <TableCell>{contract.status}</TableCell>
+        <TableCell>
+          {contract.status !== ContractStatus.FULFILLED && (
+            <input
+              type="text"
+              placeholder="Add completion note..."
+              className="bg-kala-800 text-white p-2 rounded"
+              onChange={e => handleNoteChange(contract.id, e.target.value)}
+            />
+          )}
+          {contract.completionNote}
+        </TableCell>
+        <TableCell>
+          {contract.status !== ContractStatus.FULFILLED && (
+            <button
+              onClick={() => handleMarkAsComplete(contract.id)}
+              className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+            >
+              Mark as Complete
+            </button>
+          )}
+        </TableCell>
+      </TableRow>
+    );
+  };
 
   return (
     <div className="space-y-8">

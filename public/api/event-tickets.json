@@ -1,0 +1,44 @@
+[
+  {
+    "id": "ticket-1",
+    "event": {
+      "id": "event-1",
+      "name": "Kala Festival 2024"
+    },
+    "owner": {
+      "id": "user-10",
+      "name": "John Reveller"
+    },
+    "tokenId": 101,
+    "status": "AVAILABLE",
+    "contractAddress": "0x123Abc..."
+  },
+  {
+    "id": "ticket-2",
+    "event": {
+      "id": "event-1",
+      "name": "Kala Festival 2024"
+    },
+    "owner": {
+      "id": "user-11",
+      "name": "Jane Doe"
+    },
+    "tokenId": 102,
+    "status": "SOLD",
+    "contractAddress": "0x456Def..."
+  },
+  {
+    "id": "ticket-3",
+    "event": {
+      "id": "event-2",
+      "name": "Secret Solstice 2024"
+    },
+    "owner": {
+      "id": "user-12",
+      "name": "Peter Pan"
+    },
+    "tokenId": 201,
+    "status": "INVALIDATED",
+    "contractAddress": "0x789Ghi..."
+  }
+]

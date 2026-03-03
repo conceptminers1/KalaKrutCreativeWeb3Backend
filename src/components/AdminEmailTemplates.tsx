@@ -105,7 +105,7 @@ const AdminEmailTemplates: React.FC<{ isDemoMode: boolean }> = ({
 
   const handleSendTest = async () => {
     const toEmail = 'test-recipient@example.com';
-    const fromEmail = 'noreply@kalakrut.com';
+    const fromEmail = 'kalakrutconceptminers@gmail.com';
     const emailText = renderPreview(editedBody).replace(/<br \/>/g, '\n');
     const emailHtml = renderPreview(editedBody);
 
@@ -120,7 +120,7 @@ const AdminEmailTemplates: React.FC<{ isDemoMode: boolean }> = ({
     }
 
     try {
-      const response = await fetch('http://localhost:3001/send-email', {
+      const response = await fetch('/api/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -327,4 +327,3 @@ const AdminEmailTemplates: React.FC<{ isDemoMode: boolean }> = ({
 };
 
 export default AdminEmailTemplates;
-// Trigger hot-reload

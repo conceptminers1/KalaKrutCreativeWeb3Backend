@@ -1,0 +1,32 @@
+[
+  {
+    "id": "sp-1",
+    "user": {
+      "id": "user-13",
+      "name": "SoundWaveRentals",
+      "email": "rentals@soundwaverentals.com"
+    },
+    "service": "Audio Equipment Rental",
+    "verified": true
+  },
+  {
+    "id": "sp-2",
+    "user": {
+      "id": "user-14",
+      "name": "StageLightPros",
+      "email": "lighting@stagelightpros.com"
+    },
+    "service": "Stage Lighting Design",
+    "verified": true
+  },
+  {
+    "id": "sp-3",
+    "user": {
+      "id": "user-15",
+      "name": "SecureFest",
+      "email": "contact@securefest.co"
+    },
+    "service": "Event Security Services",
+    "verified": false
+  }
+]

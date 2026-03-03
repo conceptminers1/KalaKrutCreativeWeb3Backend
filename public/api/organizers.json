@@ -1,0 +1,32 @@
+[
+  {
+    "id": "organizer-1",
+    "user": {
+      "id": "user-10",
+      "name": "EventHorizon",
+      "email": "contact@eventhorizon.com"
+    },
+    "company": "EventHorizon Productions",
+    "verified": true
+  },
+  {
+    "id": "organizer-2",
+    "user": {
+      "id": "user-11",
+      "name": "CommunityRallies",
+      "email": "rally@community.com"
+    },
+    "company": "Community Rallies Inc.",
+    "verified": false
+  },
+  {
+    "id": "organizer-3",
+    "user": {
+      "id": "user-12",
+      "name": "FestiveMakers",
+      "email": "hello@festivemakers.co"
+    },
+    "company": "Festive Makers Co.",
+    "verified": true
+  }
+]

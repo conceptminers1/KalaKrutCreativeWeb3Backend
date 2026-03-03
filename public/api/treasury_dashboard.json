@@ -1,0 +1,49 @@
+{
+  "totalValue": 1050000,
+  "totalValueTrend": 4.2,
+  "monthlyBurnRate": 81900,
+  "runwayEstimate": 10,
+  "treasuryAssets": [
+    { "symbol": "ETH", "name": "Ethereum", "balance": 100, "valueUsd": 350000, "allocation": 33.3, "trend": "up" },
+    { "symbol": "USDC", "name": "USD Coin", "balance": 500000, "valueUsd": 500000, "allocation": 47.6, "trend": "down" },
+    { "symbol": "KALA", "name": "Kalakrut", "balance": 2000000, "valueUsd": 200000, "allocation": 19.1, "trend": "up" }
+  ],
+  "recentMovements": [
+    { "type": "Dev Payout", "amount": -5000, "currency": "USDC" },
+    { "type": "Grant Refund", "amount": 2500, "currency": "USDC" },
+    { "type": "Sponsor Payment", "amount": 10000, "currency": "USDC" },
+    { "type": "Artist Payout", "amount": -3000, "currency": "USDC" },
+    { "type": "Merch Sale", "amount": 500, "currency": "USDC" }
+  ],
+  "balanceData": {
+    "total": 175000,
+    "change": 2.5,
+    "series": [
+      {"name": "Balance", "data": [150000, 160000, 155000, 165000, 175000, 170000, 175000]}
+    ]
+  },
+  "expenseData": {
+    "operational": [
+      { "label": "Staff Salaries", "value": 22500 },
+      { "label": "Portal Running Costs (Server/Cloud)", "value": 3200 },
+      { "label": "Office Rental", "value": 4500 },
+      { "label": "Office Expenses (Utilities/Supplies)", "value": 1200 },
+      { "label": "Marketing Campaigns", "value": 5000 },
+      { "label": "Digital Ads", "value": 3500 },
+      { "label": "Loan/Equipment EMI", "value": 2000 },
+      { "label": "Investor Payouts", "value": 8500 },
+      { "label": "Miscellaneous", "value": 1500 },
+      {"label": "Team Salaries", "value": 55000},
+      {"label": "Marketing & Advertising", "value": 15000},
+      {"label": "Software & Subscriptions", "value": 8000},
+      {"label": "Legal & Compliance", "value": 12000}
+    ],
+    "grants": [
+      { "label": "Portal Events & Hackathons", "value": 12000 },
+      { "label": "DAO Grants to Users", "value": 18000 },
+      {"label": "Artist Grant - Cohort 1", "value": 25000},
+      {"label": "Community Tech Grant", "value": 10000},
+      {"label": "Event Sponsorship Grant", "value": 5000}
+    ]
+  }
+}

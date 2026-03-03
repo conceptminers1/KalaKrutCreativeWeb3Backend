@@ -1,0 +1,32 @@
+[
+  {
+    "id": "reveller-1",
+    "user": {
+      "id": "user-19",
+      "name": "MusicLover_99",
+      "email": "musiclover99@example.com"
+    },
+    "tickets_purchased": 5,
+    "verified": true
+  },
+  {
+    "id": "reveller-2",
+    "user": {
+      "id": "user-20",
+      "name": "FestivalFanatic",
+      "email": "fanatic@example.com"
+    },
+    "tickets_purchased": 12,
+    "verified": true
+  },
+  {
+    "id": "reveller-3",
+    "user": {
+      "id": "user-21",
+      "name": "ConcertGoer23",
+      "email": "concertgoer@example.com"
+    },
+    "tickets_purchased": 2,
+    "verified": false
+  }
+]

@@ -1,0 +1,32 @@
+[
+  {
+    "id": "venue-1",
+    "user": {
+      "id": "user-7",
+      "name": "The Bassment Club",
+      "email": "contact@thebassment.club"
+    },
+    "location": "New York, NY",
+    "verified": true
+  },
+  {
+    "id": "venue-2",
+    "user": {
+      "id": "user-8",
+      "name": "The Vinyl Stop",
+      "email": "bookings@thevinylstop.com"
+    },
+    "location": "Los Angeles, CA",
+    "verified": false
+  },
+  {
+    "id": "venue-3",
+    "user": {
+      "id": "user-9",
+      "name": "Starlight Lounge",
+      "email": "info@starlightlounge.net"
+    },
+    "location": "Chicago, IL",
+    "verified": true
+  }
+]

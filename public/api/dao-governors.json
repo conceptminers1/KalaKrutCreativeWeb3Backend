@@ -1,0 +1,35 @@
+[
+  {
+    "id": "dao-gov-1",
+    "user": {
+      "id": "user-22",
+      "name": "DAOLeader1",
+      "email": "leader1@dao.com"
+    },
+    "proposals_created": 15,
+    "votes_cast": 45,
+    "verified": true
+  },
+  {
+    "id": "dao-gov-2",
+    "user": {
+      "id": "user-23",
+      "name": "GovTrack",
+      "email": "govtrack@dao.com"
+    },
+    "proposals_created": 8,
+    "votes_cast": 22,
+    "verified": true
+  },
+  {
+    "id": "dao-gov-3",
+    "user": {
+      "id": "user-24",
+      "name": "DecentralVoice",
+      "email": "voice@dao.com"
+    },
+    "proposals_created": 3,
+    "votes_cast": 12,
+    "verified": false
+  }
+]

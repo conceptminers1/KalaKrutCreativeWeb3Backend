@@ -1,0 +1,32 @@
+[
+  {
+    "id": "sponsor-1",
+    "user": {
+      "id": "user-16",
+      "name": "SynthWave Sounds",
+      "email": "partners@synthwavesounds.com"
+    },
+    "sponsorship_level": "Platinum",
+    "verified": true
+  },
+  {
+    "id": "sponsor-2",
+    "user": {
+      "id": "user-17",
+      "name": "IndieVibes",
+      "email": "sponsors@indievibes.com"
+    },
+    "sponsorship_level": "Gold",
+    "verified": false
+  },
+  {
+    "id": "sponsor-3",
+    "user": {
+      "id": "user-18",
+      "name": "Local Eats",
+      "email": "support@localeats.com"
+    },
+    "sponsorship_level": "Silver",
+    "verified": true
+  }
+]
