@@ -41,7 +41,6 @@ import {
   MOCK_USERS_BY_ROLE,
   MOCK_MODERATION_CASES,
 } from '@/mockData';
-import { DISABLE_ACCESS_DENIED } from '@/DISABLE_ACCESS_DENIED';
 
 // Statically Imported Components
 import Announcements from '@/components/Announcements';
@@ -660,7 +659,7 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
               case 'sitemap':
                 return <Sitemap onNavigate={navigate} />;
               case 'system_docs':
-                return (DISABLE_ACCESS_DENIED || currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN_LIVE) ? (
+                return (currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN_LIVE) ? (
                   <SystemDiagrams />
                 ) : (
                   <div className="text-red-400 bg-kala-800 p-8 rounded-xl text-center">
@@ -725,20 +724,20 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
               case 'studio':
                 return <CreativeStudio onBlockUser={handleBlockUser} />;
               case 'admin_email_templates':
-                return (DISABLE_ACCESS_DENIED || currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN_LIVE) ? (
+                return (currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN_LIVE) ? (
                   <AdminEmailTemplates />
                 ) : (
                   <div>Access Denied</div>
                 );
               case 'admin_review':
-                return (DISABLE_ACCESS_DENIED || currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN_LIVE) ? (
+                return (currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN_LIVE) ? (
                   <AdminReview requests={onboardingRequests} onStatusChange={handleOnboardingStatusChange} />
                 ) : (
                   <div>Access Denied</div>
                 );
               case 'contracts':
                 return (
-                  (DISABLE_ACCESS_DENIED || currentUserRole === UserRole.ADMIN ||
+                  (currentUserRole === UserRole.ADMIN ||
                   currentUserRole === UserRole.SYSTEM_ADMIN_LIVE ||
                   currentUserRole === UserRole.DAO_GOVERNOR ||
                   currentUserRole === UserRole.DAO_MEMBER)
@@ -752,7 +751,7 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
               case 'my_network':
                 return <MyNetwork currentUser={currentUser} />;
               case 'onboarding':
-                return (DISABLE_ACCESS_DENIED || currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN_LIVE) ? (
+                return (currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN_LIVE) ? (
                   <OnboardingPage 
                     requests={onboardingRequests} 
                     onStatusChange={handleOnboardingStatusChange}
@@ -764,13 +763,13 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
               case 'leads_and_ai':
                 return <LeadsAndAi leads={aiLeads} addLead={addLead} />;
               case 'admin_support':
-                return (DISABLE_ACCESS_DENIED || currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN_LIVE) ? (
+                return (currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN_LIVE) ? (
                   <SupportRequestsPage onNavigate={navigate} />
                 ) : (
                   <div>Access Denied</div>
                 );
               case 'treasury':
-                return (DISABLE_ACCESS_DENIED || currentUserRole === UserRole.ADMIN ||
+                return (currentUserRole === UserRole.ADMIN ||
                   currentUserRole === UserRole.DAO_GOVERNOR ||
                   currentUserRole === UserRole.SYSTEM_ADMIN_LIVE) ? (
                   <TreasuryPage />
@@ -778,7 +777,7 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
                   <div>Access Denied</div>
                 );
               case 'hrds':
-                return (DISABLE_ACCESS_DENIED || currentUserRole === UserRole.ADMIN ||
+                return (currentUserRole === UserRole.ADMIN ||
                   currentUserRole === UserRole.DAO_GOVERNOR ||
                   currentUserRole === UserRole.SYSTEM_ADMIN_LIVE) ? (
                   <HRDashboard />
@@ -786,14 +785,14 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
                   <div>Access Denied</div>
                 );
               case 'admin':
-                return (DISABLE_ACCESS_DENIED || currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN_LIVE) ? (
+                return (currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN_LIVE) ? (
                   <AdminPage onNavigate={navigate} />
                 ) : (
                   <div>Access Denied</div>
                 );
               case 'tables':
                 return (
-                  (DISABLE_ACCESS_DENIED || currentUserRole === UserRole.ADMIN ||
+                  (currentUserRole === UserRole.ADMIN ||
                   currentUserRole === UserRole.SYSTEM_ADMIN_LIVE ||
                   currentUserRole === UserRole.DAO_GOVERNOR ||
                   currentUserRole === UserRole.DAO_MEMBER)
@@ -815,7 +814,7 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
                   />
                 );
               case 'analytics':
-                return (DISABLE_ACCESS_DENIED || currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN_LIVE) ? (
+                return (currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN_LIVE) ? (
                   <AnalyticsDashboard />
                 ) : (
                   <div>Access Denied</div>

@@ -1,0 +1,14 @@
+Filesystem                   Size  Used Avail Use% Mounted on
+tmpfs                         16G   12K   16G   1% /
+tmpfs                         64M     0   64M   0% /dev
+shm                           64M  4.0K   64M   1% /dev/shm
+overlay                       25G  242M   23G   2% /nix
+tmpfs                         16G     0   16G   0% /nix/store/pf5avvvl4ssd6kylcvg2g23hcjp71h19-glibc-2.39-52/etc
+overlay                       25G  242M   23G   2% /etc/bashrc
+overlay                       25G  242M   23G   2% /etc/login.defs
+overlay                       46G   35G   11G  76% /mnt
+/dev/sdb1                     46G   35G   11G  76% /etc/hosts
+/dev/sda                      22G   22G     0 100% /ephemeral
+/dev/disk/by-id/google-home   15G   14G   19M 100% /home
+tmpfs                         16G     0   16G   0% /run
+tmpfs                         16G     0   16G   0% /var

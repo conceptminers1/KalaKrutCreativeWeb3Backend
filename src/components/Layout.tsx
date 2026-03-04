@@ -34,7 +34,6 @@ import { useData } from '../hooks/useData';
 import SupportWidget from '../components/SupportWidget';
 import { useToast } from '../contexts/ToastContext';
 import UserNotifications from './UserNotifications';
-import { DISABLE_ACCESS_DENIED } from '@/DISABLE_ACCESS_DENIED';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -160,7 +159,7 @@ const Layout: React.FC<LayoutProps> = ({
       },
     ];
 
-    if (DISABLE_ACCESS_DENIED || userRole === UserRole.ADMIN || userRole === UserRole.SYSTEM_ADMIN_LIVE) {
+    if (userRole === UserRole.ADMIN || userRole === UserRole.SYSTEM_ADMIN_LIVE) {
       return allAdminItems;
     }
 
