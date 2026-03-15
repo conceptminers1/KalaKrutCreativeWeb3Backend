@@ -22,7 +22,7 @@ const validateTransaction = (req, res, next) => {
 
 /**
  * @swagger
- * /api/fiat-transactions:
+ * /api/transactions/fiat-transactions:
  *   get:
  *     summary: Retrieve a list of all fiat transactions
  *     description: Fetches all fiat transactions from the database, ordered by most recent.
@@ -56,7 +56,7 @@ router.get('/fiat-transactions', async (req, res) => {
 
 /**
  * @swagger
- * /api/fiat-transactions:
+ * /api/transactions/fiat-transactions:
  *   post:
  *     summary: Create a new fiat transaction
  *     description: Adds a new fiat transaction to the database. This endpoint will be used by payment gateways like PayPal or Stripe in the future.

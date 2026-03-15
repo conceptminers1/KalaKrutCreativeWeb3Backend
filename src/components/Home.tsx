@@ -183,10 +183,8 @@ const Home: React.FC<HomeProps> = ({ onLogin, onViewNews, onJoin, isLoggingIn })
         notify('Please enter email and password.', 'warning');
         return;
       }
-
-      startTransition(() => {
-        onLogin(selectedRoleForLogin, method, { email, password });
-      });
+      // Calling onLogin directly without transition to ensure modal opens promptly.
+      onLogin(selectedRoleForLogin, method, { email, password });
     }
   };
 

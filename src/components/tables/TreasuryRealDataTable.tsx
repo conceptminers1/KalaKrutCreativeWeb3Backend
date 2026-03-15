@@ -76,7 +76,7 @@ const TreasuryRealDataTable: React.FC = () => {
         let apiData: any[] = [];
         try {
           console.log("TreasuryLedger: Attempting to fetch from backend API...");
-          const response = await fetch(`${API_BASE_URL}/api/fiat-transactions`);
+          const response = await fetch(`${API_BASE_URL}/api/fiat-transactions`, { credentials: 'include' });
           console.log("TreasuryLedger: API Response Status:", response.status);
           if (response.ok) {
             apiData = await response.json();

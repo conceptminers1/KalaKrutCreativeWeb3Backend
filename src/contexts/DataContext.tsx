@@ -121,6 +121,7 @@ const SUPER_ADMIN: RosterMember = {
   subscriberOnly: { email: 'bhoominpandya@gmail.com', phone: '+1 (555) 000-SUPER', agentContact: 'Direct' },
   isMock: false,
   password: 'Creatkala!2',
+  walletAddress: '0x8a7c46f1a77592a3d74a851C81132C1677379879',
 };
 
 export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -131,14 +132,30 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
           let users = parsed.filter(Boolean);
-          if (!users.some((u) => u && u.id === SYSTEM_ADMIN.id)) users.push(SYSTEM_ADMIN);
-          if (!users.some((u) => u && u.id === SUPER_ADMIN.id)) users.push(SUPER_ADMIN);
+
+          // --- SELF-HEALING LOGIC ---
+          // Ensure system-critical users are always up-to-date from the code definition.
+          const systemAdminIndex = users.findIndex(u => u && u.id === SYSTEM_ADMIN.id);
+          if (systemAdminIndex !== -1) {
+            users[systemAdminIndex] = { ...users[systemAdminIndex], ...SYSTEM_ADMIN };
+          } else {
+            users.push(SYSTEM_ADMIN);
+          }
+
+          const superAdminIndex = users.findIndex(u => u && u.id === SUPER_ADMIN.id);
+          if (superAdminIndex !== -1) {
+            users[superAdminIndex] = { ...users[superAdminIndex], ...SUPER_ADMIN };
+          } else {
+            users.push(SUPER_ADMIN);
+          }
+
           return users;
         }
       }
     } catch (error) {
-      console.error("CRITICAL: Failed to load 'kk_users'.", error);
+      console.error("CRITICAL: Failed to load 'kk_users'. Falling back to mocks.", error);
     }
+    // Fallback to mocks only if localStorage fails or is empty.
     return [...tagMocks(MOCK_ROSTER), SYSTEM_ADMIN, SUPER_ADMIN];
   });
 

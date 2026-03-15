@@ -14,18 +14,25 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+    dedupe: ['framer-motion'],
+  },
+  define: {
+    'process.env': {},
+  },
+  optimizeDeps: {
+    exclude: ['server'],
   },
   server: {
     host: true,
     port: 3000,
     strictPort: true,
     hmr: {
-      clientPort: 443,
+      protocol: 'wss',
+      host: '9000-firebase-kalakrutcreativekg1-1769075240619.cluster-ejd22kqny5htuv5dfowoyipt52.cloudworkstations.dev'
     },
-    // Required for Coinbase Smart Wallet popups
     headers: {
+      'Access-Control-Allow-Origin': '*',
       'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
-      'Cross-Origin-Embedder-Policy': 'credentialless',
     },
     allowedHosts: ['.cloudworkstations.dev'],
   },

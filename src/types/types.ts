@@ -379,7 +379,7 @@ export interface EscrowContract {
 
 export interface Lead {
   id: string;
-  user: User;
+  user: User | null;
   userId: string;
   status: string;
   createdAt: Date;

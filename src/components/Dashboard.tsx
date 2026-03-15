@@ -140,7 +140,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
           </button>
           {!isConnected ? (
             <button
-              onClick={open}
+              onClick={() => open({ view: 'WalletConnect' })}
               className="flex items-center gap-2 px-4 py-2 rounded-lg bg-kala-secondary text-kala-900 font-bold hover:bg-cyan-400 transition-colors"
             >
               <WalletIcon className="w-5 h-5" />

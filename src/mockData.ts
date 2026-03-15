@@ -310,6 +310,18 @@ export const MOCK_USERS_BY_ROLE: Record<UserRole, ArtistProfile> = {
 
 export const MOCK_ROSTER: RosterMember[] = [
   {
+    id: 'u_admin',
+    name: 'System Admin',
+    role: UserRole.ADMIN,
+    avatar: 'https://picsum.photos/seed/admin/200',
+    location: 'Global',
+    verified: true,
+    assets: { ips: [], events: [], services: [], products: [], contents: [], equipment: [], instruments: [], tickets: [] },
+    rating: 5.0,
+    subscriberOnly: { email: 'admin@kalakrut.io', phone: '', agentContact: '' },
+    walletAddress: '0xAdminWalletAddress',
+  },
+  {
     id: 'u_artist',
     name: 'Luna Eclipse',
     role: UserRole.ARTIST,

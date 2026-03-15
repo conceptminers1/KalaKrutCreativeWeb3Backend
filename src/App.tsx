@@ -1,5 +1,6 @@
-
 import React, { useState, useEffect, useTransition } from 'react';
+import '@/wallet/web3modal';
+import { useWeb3Modal, useDisconnect } from '@web3modal/ethers/react';
 import Layout from '@/components/Layout';
 import Home from '@/components/Home';
 import Dashboard from '@/components/Dashboard';
@@ -8,6 +9,7 @@ import { ToastProvider, useToast } from '@/contexts/ToastContext';
 import { DataProvider, useData, transformRosterMemberToArtistProfile } from '@/contexts/DataContext';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { API_BASE_URL } from '@/config';
 import {
   UserRole,
   ModerationCase,
@@ -15,8 +17,9 @@ import {
   Artist,
   OnboardingRequest,
   Lead,
-  ItemStatus
-} from '@/types/types';
+  ItemStatus,
+  RosterMember
+} from '@/types';
 import {
   Wallet,
   Bell,
@@ -156,18 +159,11 @@ const BlockedScreen: React.FC<{ onAppeal: (reason: string) => void }> = ({
   );
 };
 
-interface AppContentProps {
-  currentUser: IArtistProfile | null;
-  setCurrentUser: React.Dispatch<React.SetStateAction<IArtistProfile | null>>;
-}
 
-const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) => {
+const AppContent: React.FC = () => {
   const [isPending, startTransition] = useTransition();
   const [currentView, setCurrentView] = useState('home');
   const [activeTableView, setActiveTableView] = useState(''); 
-  const [currentUserRole, setCurrentUserRole] = useState<UserRole>(
-    UserRole.GUEST
-  );
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [chatRecipient, setChatRecipient] = useState(MOCK_ARTIST_PROFILE);
@@ -175,7 +171,7 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
   const [showWalletHistory, setShowWalletHistory] = useState(false);
   const [showTokenExchange, setShowTokenExchange] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedProfile, setSelectedProfile] = useState(MOCK_ARTIST_PROFILE);
+  const [selectedProfile, setSelectedProfile] = useState<RosterMember | IArtistProfile>(MOCK_ARTIST_PROFILE);
   const [isUserBlocked, setIsUserBlocked] = useState(false);
   const [moderationCases, setModerationCases] = useState<ModerationCase[]>(
     MOCK_MODERATION_CASES
@@ -185,15 +181,19 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
   const [onboardingFilter, setOnboardingFilter] = useState<'all' | 'Lead' | 'Join Request'>('all');
   const [profileTab, setProfileTab] = useState('overview');
 
-  const {
-    isConnected: isWalletConnected,
-    open: openWalletModal,
-    disconnect: disconnectWallet,
-    address: walletAddress,
-  } = useWallet();
+  const { isConnected: isWalletConnected, address: walletAddress } = useWallet();
+  const { open } = useWeb3Modal();
+  const { disconnect } = useDisconnect();
   const { notify } = useToast();
   const { addUser, findUserByEmail, findUserByWallet, updateUser } =
     useData();
+  const { currentUser, loading: authLoading, login, logout, connectWallet, setCurrentUser } = useAuth();
+
+    useEffect(() => {
+      if (isWalletConnected && walletAddress && !currentUser) {
+        connectWallet(walletAddress);
+      }
+    }, [isWalletConnected, walletAddress, currentUser, connectWallet]);
 
   const navigate = (view: string) => {
     startTransition(() => {
@@ -223,8 +223,8 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
     const fetchOnboardingRequests = async () => {
       try {
         const [leadsResponse, joinRequestsResponse] = await Promise.all([
-          fetch('http://localhost:3001/api/leads').catch(e => { console.error('Fetch leads failed:', e); return { json: () => Promise.resolve([]) }; }),
-          fetch('http://localhost:3001/api/join-requests/admin/all').catch(e => { console.error('Fetch join requests failed:', e); return { json: () => Promise.resolve([]) }; }),
+          fetch(`${API_BASE_URL}/api/leads`, { credentials: 'include' }).catch(e => { console.error('Fetch leads failed:', e); return { json: () => Promise.resolve([]) }; }),
+          fetch(`${API_BASE_URL}/api/join-requests/admin/all`, { credentials: 'include' }).catch(e => { console.error('Fetch join requests failed:', e); return { json: () => Promise.resolve([]) }; }),
         ]);
 
         const leadsData = await leadsResponse.json();
@@ -232,17 +232,17 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
 
         const transformedAiLeads = leadsData.map((lead: any) => ({
           id: lead.id,
-          name: lead.user.name,
+          name: lead.user?.name || 'Unknown Artist',
           status: lead.status,
-          bio: (lead.user && lead.user.artist && lead.user.artist.disambiguation) || ''
+          bio: lead.user?.artist?.disambiguation || ''
         }));
         setAiLeads(transformedAiLeads);
 
         const transformedOnboardingLeads: OnboardingRequest[] = leadsData.map((lead: any) => ({
           id: lead.id,
           type: 'Lead',
-          name: lead.user.name,
-          email: lead.user.email,
+          name: lead.user?.name || 'Unknown Artist',
+          email: lead.user?.email || 'No Email',
           requestedRole: UserRole.ARTIST, 
           status: lead.status,
           date: new Date(lead.createdAt),
@@ -260,48 +260,58 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
 
         setOnboardingRequests([...transformedOnboardingLeads, ...transformedJoinRequests]);
       } catch (error) {
-        // This might still fail if the server isn't running, but the UI won't crash.
         console.error('Error processing onboarding requests:', error);
       }
     };
 
-    if (currentUser && (currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN_LIVE)) {
+    if (currentUser && (currentUser.role === UserRole.ADMIN || currentUser.role === UserRole.SYSTEM_ADMIN_LIVE)) {
       fetchOnboardingRequests();
     }
-  }, [currentUser, currentUserRole, notify]);
-
+  }, [currentUser, notify]);
 
   const handleLogin = async (
     role: UserRole | null,
     method: 'web2' | 'web3',
     credentials?: any
   ) => {
+    if (role && (role === UserRole.ADMIN || role === UserRole.SYSTEM_ADMIN_LIVE) && method === 'web3') {
+      notify('Admin-level roles may not use wallet-based login for security reasons.', 'error');
+      return;
+    }
+    
     if (method === 'web3' && !isWalletConnected) {
-      openWalletModal();
-      return; 
+      open({ view: 'Connect' });
+      return;
     }
 
     setIsLoggingIn(true);
-    let userToLogin: IArtistProfile | null = null;
+
+    let userToLogin: RosterMember | null = null;
 
     if (method === 'web3') {
-        const rosterUser = findUserByWallet(walletAddress!);
-        if (rosterUser) {
-            userToLogin = transformRosterMemberToArtistProfile(rosterUser, MOCK_ARTIST_PROFILE);
-        }
-    } else { 
+      if (!walletAddress) {
+        notify('Wallet is connected but address is not available. Please try reconnecting.', 'error');
+        disconnect();
+        setIsLoggingIn(false);
+        return;
+      }
+      
+      userToLogin = findUserByWallet(walletAddress) || null;
+      
+    } else { // web2 login
       if (
         credentials?.email === 'bhoominpandya@gmail.com' &&
         credentials?.password === 'Creatkala!2'
       ) {
         notify(`Bypassing live login for test role: ${role}`, 'info');
-        userToLogin = MOCK_USERS_BY_ROLE[role!] || MOCK_ARTIST_PROFILE;
+        userToLogin = MOCK_USERS_BY_ROLE[role!] || null;
       } else {
         try {
-          const response = await fetch('http://localhost:3001/api/login', {
+          const response = await fetch(`${API_BASE_URL}/api/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(credentials),
+            credentials: 'include',
           });
           const data = await response.json();
           if (!response.ok) {
@@ -320,8 +330,8 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
 
     if (!userToLogin) {
       if (method === 'web3') {
-        notify('Wallet connected, but no user found. Please register.', 'info');
-        navigate('join_request'); 
+        notify('Wallet connected, but no user found for this address. Please register.', 'info');
+        navigate('join_request');
       } else {
         notify('Login failed. Please check your credentials.', 'error');
       }
@@ -334,17 +344,23 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
       setIsLoggingIn(false);
       return;
     }
+    
+    const finalUser = {
+        ...userToLogin,
+        assets: userToLogin.assets || {
+            ips: [], contents: [], events: [], products: [], services: [], equipment: [], instruments: [], tickets: []
+        }
+    };
 
-    setCurrentUserRole(userToLogin.role);
-    setCurrentUser(userToLogin);
-    setSelectedProfile(userToLogin);
+    setCurrentUser(finalUser);
+    setSelectedProfile(transformRosterMemberToArtistProfile(finalUser, MOCK_ARTIST_PROFILE));
     setIsUserBlocked(false);
 
     startTransition(() => {
       setCurrentView('dashboard');
     });
 
-    notify(`Welcome back, ${userToLogin.name}!`, 'info');
+    notify(`Welcome back, ${finalUser.name}!`, 'info');
     setIsLoggingIn(false);
   };
 
@@ -364,7 +380,6 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
           status: 'New',
         };
 
-        // Also update the main onboarding requests list for other parts of the app
         setOnboardingRequests((prevOnboarding) => {
             const newOnboardingRequest: OnboardingRequest = {
                 id: artist.id,
@@ -393,18 +408,19 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
     if (!request) return;
 
     let url = '';
-    let options: RequestInit = { method: 'POST' }; 
+    let options: RequestInit = { method: 'POST', credentials: 'include' }; 
 
     if (request.type === 'Lead') {
-      url = `http://localhost:3001/api/leads/${id}`;
+      url = `${API_BASE_URL}/api/leads/${id}`;
       options = {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus.toUpperCase() }),
+        credentials: 'include',
       };
     } else { // Join Request
       const action = newStatus === 'Approved' ? 'approve' : 'deny';
-      url = `http://localhost:3001/api/join-requests/admin/${action}/${id}`;
+      url = `${API_BASE_URL}/api/join-requests/admin/${action}/${id}`;
     }
 
     try {
@@ -439,7 +455,7 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
       id: `MOD-${Date.now()}`,
       userId: currentUser.id,
       userName: currentUser.name,
-      userRole: currentUserRole,
+      userRole: currentUser.role,
       violationType: 'Automated Flag (Zero Tolerance)',
       contentSnippet: 'User content triggered global moderation filter.',
       status: 'Blocked',
@@ -489,19 +505,16 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
   };
 
   const handleOpenChat = () => {
-    setChatRecipient(selectedProfile);
-    setShowChat(true);
-  };
-
-  const handleWalletConnect = () => {
-    openWalletModal();
+    if ('name' in selectedProfile) {
+        setChatRecipient(selectedProfile as IArtistProfile);
+        setShowChat(true);
+    }
   };
 
   const handleLogout = () => {
     setCurrentUser(null);
-    setCurrentUserRole(UserRole.GUEST);
     setSelectedProfile(MOCK_ARTIST_PROFILE);
-    disconnectWallet();
+    disconnect();
     navigate('home');
     setIsUserBlocked(false);
     notify('Logged out successfully.', 'info');
@@ -510,19 +523,7 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
   const handleViewProfile = (id: string) => {
     const member = MOCK_ROSTER.find((m) => m.id === id);
     if (member) {
-      const profile = {
-        ...MOCK_ARTIST_PROFILE,
-        id: member.id,
-        name: member.name,
-        role: member.role,
-        avatar: member.avatar,
-        location: member.location,
-        verified: member.verified,
-        walletAddress: member.walletAddress,
-        bio: `${member.name} is a leading ${member.role} in the KalaKrut ecosystem...`,
-        coverImage: `https://picsum.photos/seed/${member.id}/1200/400`,
-      };
-      setSelectedProfile(profile as IArtistProfile);
+      setSelectedProfile(transformRosterMemberToArtistProfile(member, MOCK_ARTIST_PROFILE));
       setProfileTab('overview');
       navigate('profile');
     }
@@ -530,21 +531,18 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
 
   const handleUpdateUserProfile = (updates: Partial<IArtistProfile>) => {
     if (!currentUser) return;
-    const updatedUser = { ...currentUser, ...updates };
-    setCurrentUser(updatedUser);
-    updateUser({
-      id: updatedUser.id,
-      name: updatedUser.name,
-      avatar: updatedUser.avatar,
-      walletAddress: updatedUser.walletAddress,
-      subscriberOnly: {
-        ...updatedUser.subscriberOnly,
-        email: updatedUser.email || updatedUser.subscriberOnly.email,
-      },
-      password: updatedUser.password,
-    });
+    
+    const updatedRosterMember: RosterMember = {
+        ...currentUser,
+        ...updates,
+        email: updates.email || currentUser.email,
+    };
+
+    setCurrentUser(updatedRosterMember);
+    updateUser(updatedRosterMember);
+    
     if (selectedProfile.id === currentUser.id) {
-      setSelectedProfile(updatedUser);
+      setSelectedProfile(transformRosterMemberToArtistProfile(updatedRosterMember, MOCK_ARTIST_PROFILE));
     }
   };
 
@@ -557,7 +555,7 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
             Welcome back, {currentUser.name}
           </h1>
           <p className="text-kala-400 text-sm">
-            Role: {currentUserRole} &bull; {currentUser.location}
+            Role: {currentUser.role} &bull; {currentUser.location}
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -574,7 +572,7 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
           </div>
           {!isWalletConnected ? (
             <button
-              onClick={handleWalletConnect}
+              onClick={() => open({ view: 'Connect' })}
               disabled={isLoggingIn}
               className="text-xs bg-kala-secondary text-kala-900 px-3 py-1.5 rounded font-bold hover:bg-cyan-400 transition-colors flex items-center gap-2"
             >
@@ -612,7 +610,7 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
             </div>
             <div
               onClick={() => {
-                setSelectedProfile(currentUser);
+                setSelectedProfile(transformRosterMemberToArtistProfile(currentUser, MOCK_ARTIST_PROFILE));
                 setProfileTab('overview');
                 navigate('profile');
               }}
@@ -639,9 +637,6 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
   };
 
   const renderAppContent = () => {
-    if (!currentUser) {
-      return <PageLoader />;
-    }
     return (
       <div
         className={
@@ -659,7 +654,7 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
               case 'sitemap':
                 return <Sitemap onNavigate={navigate} />;
               case 'system_docs':
-                return (currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN_LIVE) ? (
+                return (currentUser?.role === UserRole.ADMIN || currentUser?.role === UserRole.SYSTEM_ADMIN_LIVE) ? (
                   <SystemDiagrams />
                 ) : (
                   <div className="text-red-400 bg-kala-800 p-8 rounded-xl text-center">
@@ -678,7 +673,7 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
               case 'governance':
                 return (
                   <DaoGovernance
-                    currentUserRole={currentUserRole}
+                    currentUserRole={currentUser?.role || UserRole.GUEST}
                     onOpenExchange={() => setShowTokenExchange(true)}
                   />
                 );
@@ -687,23 +682,25 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
                   <Marketplace
                     onBlockUser={handleBlockUser}
                     onChat={(seller) => {
-                      setChatRecipient({
-                        ...MOCK_ARTIST_PROFILE,
-                        name: seller.name,
-                        avatar: seller.avatar,
-                      });
-                      setShowChat(true);
+                        if('name' in selectedProfile){
+                            setChatRecipient({
+                                ...MOCK_ARTIST_PROFILE,
+                                name: seller.name,
+                                avatar: seller.avatar,
+                            });
+                            setShowChat(true);
+                        }
                     }}
-                    currentUserRole={currentUserRole}
+                    currentUserRole={currentUser?.role || UserRole.GUEST}
                     currentUserId={currentUser.id}
                   />
                 );
               case 'services':
                 return (
                   <ServicesHub
-                    userRole={currentUserRole}
+                    userRole={currentUser?.role || UserRole.GUEST}
                     onNavigateToLeads={() => {
-                      setSelectedProfile(currentUser);
+                      setSelectedProfile(transformRosterMemberToArtistProfile(currentUser, MOCK_ARTIST_PROFILE));
                       setProfileTab('leads');
                       navigate('profile');
                     }}
@@ -720,27 +717,27 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
               case 'roster_analytics':
                 return <RosterAnalyticsPage onNavigate={navigate} />;
               case 'forum':
-                return <Forum onBlockUser={handleBlockUser} currentUserRole={currentUserRole} currentUserId={currentUser.id} />;
+                return <Forum onBlockUser={handleBlockUser} currentUserRole={currentUser?.role || UserRole.GUEST} currentUserId={currentUser.id} />;
               case 'studio':
                 return <CreativeStudio onBlockUser={handleBlockUser} />;
               case 'admin_email_templates':
-                return (currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN_LIVE) ? (
+                return (currentUser?.role === UserRole.ADMIN || currentUser?.role === UserRole.SYSTEM_ADMIN_LIVE) ? (
                   <AdminEmailTemplates />
                 ) : (
                   <div>Access Denied</div>
                 );
               case 'admin_review':
-                return (currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN_LIVE) ? (
+                return (currentUser?.role === UserRole.ADMIN || currentUser?.role === UserRole.SYSTEM_ADMIN_LIVE) ? (
                   <AdminReview requests={onboardingRequests} onStatusChange={handleOnboardingStatusChange} />
                 ) : (
                   <div>Access Denied</div>
                 );
               case 'contracts':
                 return (
-                  (currentUserRole === UserRole.ADMIN ||
-                  currentUserRole === UserRole.SYSTEM_ADMIN_LIVE ||
-                  currentUserRole === UserRole.DAO_GOVERNOR ||
-                  currentUserRole === UserRole.DAO_MEMBER)
+                  (currentUser.role === UserRole.ADMIN ||
+                  currentUser.role === UserRole.SYSTEM_ADMIN_LIVE ||
+                  currentUser.role === UserRole.DAO_GOVERNOR ||
+                  currentUser.role === UserRole.DAO_MEMBER)
                 ) ? (
                   <ErrorBoundary><ContractsDashboard /></ErrorBoundary>
                 ) : (
@@ -751,7 +748,7 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
               case 'my_network':
                 return <MyNetwork currentUser={currentUser} />;
               case 'onboarding':
-                return (currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN_LIVE) ? (
+                return (currentUser.role === UserRole.ADMIN || currentUser.role === UserRole.SYSTEM_ADMIN_LIVE) ? (
                   <OnboardingPage 
                     requests={onboardingRequests} 
                     onStatusChange={handleOnboardingStatusChange}
@@ -763,48 +760,48 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
               case 'leads_and_ai':
                 return <LeadsAndAi leads={aiLeads} addLead={addLead} />;
               case 'admin_support':
-                return (currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN_LIVE) ? (
+                return (currentUser.role === UserRole.ADMIN || currentUser.role === UserRole.SYSTEM_ADMIN_LIVE) ? (
                   <SupportRequestsPage onNavigate={navigate} />
                 ) : (
                   <div>Access Denied</div>
                 );
               case 'treasury':
-                return (currentUserRole === UserRole.ADMIN ||
-                  currentUserRole === UserRole.DAO_GOVERNOR ||
-                  currentUserRole === UserRole.SYSTEM_ADMIN_LIVE) ? (
+                return (currentUser.role === UserRole.ADMIN ||
+                  currentUser.role === UserRole.DAO_GOVERNOR ||
+                  currentUser.role === UserRole.SYSTEM_ADMIN_LIVE) ? (
                   <TreasuryPage />
                 ) : (
                   <div>Access Denied</div>
                 );
               case 'hrds':
-                return (currentUserRole === UserRole.ADMIN ||
-                  currentUserRole === UserRole.DAO_GOVERNOR ||
-                  currentUserRole === UserRole.SYSTEM_ADMIN_LIVE) ? (
+                return (currentUser.role === UserRole.ADMIN ||
+                  currentUser.role === UserRole.DAO_GOVERNOR ||
+                  currentUser.role === UserRole.SYSTEM_ADMIN_LIVE) ? (
                   <HRDashboard />
                 ) : (
                   <div>Access Denied</div>
                 );
               case 'admin':
-                return (currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN_LIVE) ? (
+                return (currentUser.role === UserRole.ADMIN || currentUser.role === UserRole.SYSTEM_ADMIN_LIVE) ? (
                   <AdminPage onNavigate={navigate} />
                 ) : (
                   <div>Access Denied</div>
                 );
               case 'tables':
                 return (
-                  (currentUserRole === UserRole.ADMIN ||
-                  currentUserRole === UserRole.SYSTEM_ADMIN_LIVE ||
-                  currentUserRole === UserRole.DAO_GOVERNOR ||
-                  currentUserRole === UserRole.DAO_MEMBER)
+                  (currentUser.role === UserRole.ADMIN ||
+                  currentUser.role === UserRole.SYSTEM_ADMIN_LIVE ||
+                  currentUser.role === UserRle.DAO_GOVERNOR ||
+                  currentUser.role === UserRole.DAO_MEMBER)
                 ) ? (
-                  <TablesPage activeView={activeTableView} onNavigate={navigate} currentUserRole={currentUserRole} currentUserId={currentUser.id} />
+                  <TablesPage activeView={activeTableView} onNavigate={navigate} currentUserRole={currentUser?.role || UserRole.GUEST} currentUserId={currentUser.id} />
                 ) : (
                   <div>Access Denied</div>
                 );
               case 'profile':
                 return (
                   <ArtistProfile
-                    artist={selectedProfile}
+                    artist={selectedProfile as IArtistProfile}
                     onChat={handleOpenChat}
                     onBook={() => navigate('booking')}
                     isOwnProfile={selectedProfile.id === currentUser.id}
@@ -814,7 +811,7 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
                   />
                 );
               case 'analytics':
-                return (currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.SYSTEM_ADMIN_LIVE) ? (
+                return (currentUser.role === UserRole.ADMIN || currentUser.role === UserRole.SYSTEM_ADMIN_LIVE) ? (
                   <AnalyticsDashboard />
                 ) : (
                   <div>Access Denied</div>
@@ -823,16 +820,21 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
                 return <Announcements onBack={() => navigate('dashboard')} />;
               case 'dashboard':
               default:
-                return <Dashboard user={currentUser} onNavigate={navigate} />;
+                return <Dashboard user={transformRosterMemberToArtistProfile(currentUser, MOCK_ARTIST_PROFILE)} onNavigate={navigate} />;
             }
           })()}
       </div>
     );
   };
 
+  if (authLoading) {
+    return <PageLoader />;
+  }
+
   if (isUserBlocked) {
     return <BlockedScreen onAppeal={handleAppeal} />;
   }
+
   if (!currentUser) {
     if (currentView === 'announcements_public') {
       return (
@@ -873,7 +875,7 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
   return (
     <Layout
       currentView={currentView}
-      userRole={currentUserRole}
+      userRole={currentUser?.role || UserRole.GUEST}
       onNavigate={navigate}
       onLogout={handleLogout}
     >
@@ -899,15 +901,14 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser, setCurrentUser }) 
 };
 
 const App: React.FC = () => {
-  const [currentUser, setCurrentUser] = useState<IArtistProfile | null>(null);
 
   return (
     <ErrorBoundary>
       <ToastProvider>
         <WalletProvider>
-          <DataProvider currentUserId={currentUser?.id}>
+          <DataProvider>
             <AuthProvider>
-              <AppContent currentUser={currentUser} setCurrentUser={setCurrentUser} />
+              <AppContent />
             </AuthProvider>
           </DataProvider>
         </WalletProvider>

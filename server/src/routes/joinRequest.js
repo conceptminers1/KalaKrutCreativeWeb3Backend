@@ -112,7 +112,7 @@ router.get('/admin/all', async (req, res) => {
                 createdAt: 'desc',
             },
         });
-        res.json(requests);
+        res.json(requests || []);
     } catch (error) {
         console.error('Failed to retrieve join requests:', error);
         res.status(500).json({ error: 'Failed to retrieve join requests' });
