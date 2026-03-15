@@ -791,7 +791,7 @@ const AppContent: React.FC = () => {
                 return (
                   (currentUser.role === UserRole.ADMIN ||
                   currentUser.role === UserRole.SYSTEM_ADMIN_LIVE ||
-                  currentUser.role === UserRle.DAO_GOVERNOR ||
+                  currentUser.role === UserRole.DAO_GOVERNOR ||
                   currentUser.role === UserRole.DAO_MEMBER)
                 ) ? (
                   <TablesPage activeView={activeTableView} onNavigate={navigate} currentUserRole={currentUser?.role || UserRole.GUEST} currentUserId={currentUser.id} />
